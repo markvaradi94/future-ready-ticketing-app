@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -164,6 +165,41 @@ class TicketOfficeTest {
                 event("e2", "Festival", "Cluj", NOW.plusDays(1), 100, 0)));
 
         assertEquals(List.of("e2", "e1"), ids(office.upcomingEventsIn("Cluj", NOW)));
+    }
+
+    @Test
+    void bookAllCountsOnlyConfirmedSeats() {
+        TicketOffice office = new TicketOffice(List.of(event("e1", 10, 8)));
+
+        int seats = office.bookAll(List.of(
+                new BookingRequest("e1", "ana@mail.ro", 2),
+                new BookingRequest("e1", "ion@mail.ro", 1),
+                new BookingRequest("e9", "dan@mail.ro", 4)));
+
+        assertEquals(2, seats);
+    }
+
+    @Test
+    void lastBookingIsTheMostRecentOne() {
+        TicketOffice office = new TicketOffice(List.of(event("e1", 100, 0)));
+        assertEquals(Optional.empty(), office.lastBooking());
+
+        office.book(new BookingRequest("e1", "ana@mail.ro", 2));
+        office.book(new BookingRequest("e1", "ion@mail.ro", 3));
+
+        assertEquals("ion@mail.ro", office.lastBooking().orElseThrow().getCustomerEmail());
+    }
+
+    @Test
+    void bookingsComeInBatches() {
+        TicketOffice office = new TicketOffice(List.of(event("e1", 100, 0)));
+        for (String email : List.of("a@mail.ro", "b@mail.ro", "c@mail.ro")) {
+            office.book(new BookingRequest("e1", email, 1));
+        }
+
+        List<List<Booking>> batches = office.bookingsInBatches(2);
+
+        assertEquals(List.of(2, 1), batches.stream().map(List::size).toList());
     }
 
     private static Event event(String id, int capacity, int bookedSeats) {

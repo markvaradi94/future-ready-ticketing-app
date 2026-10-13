@@ -3,6 +3,7 @@ package ro.frit.ticketing.domain;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Gatherers;
 
 public class TicketOffice {
     private final Map<String, Event> events = new LinkedHashMap<>();
@@ -77,6 +78,29 @@ public class TicketOffice {
                 .filter(event -> event.getVenue().city().equalsIgnoreCase(city))
                 .filter(event -> event.getStartsAt().isAfter(now))
                 .sorted(Comparator.comparing(Event::getStartsAt))
+                .toList();
+    }
+
+    // Java 21 and 22: a switch over the sealed result; the cases without seats share one branch, and '_' drops their data.
+    public int bookAll(List<BookingRequest> requests) {
+        return requests.stream()
+                .map(this::book)
+                .mapToInt(result -> switch (result) {
+                    case BookingResult.Confirmed(Booking booking) -> booking.getSeats();
+                    case BookingResult.SoldOut _, BookingResult.UnknownEvent _, BookingResult.AlreadyStarted _ -> 0;
+                })
+                .sum();
+    }
+
+    // Java 21: getLast() on a list.
+    public Optional<Booking> lastBooking() {
+        return bookings.isEmpty() ? Optional.empty() : Optional.of(bookings.getLast());
+    }
+
+    // Java 24: a gatherer cuts the stream into groups of the given size.
+    public List<List<Booking>> bookingsInBatches(int size) {
+        return bookings.stream()
+                .gather(Gatherers.windowFixed(size))
                 .toList();
     }
 }

@@ -20,8 +20,12 @@ You can also pick the tag in the branch menu on GitHub and use **Code > Download
 
 - `ro.frit.ticketing.domain` holds the domain: `Event`, `Venue`, `Booking`, `BookingRequest`, the sealed `BookingResult` and `TicketOffice` with the booking rules.
 - `ro.frit.features` holds the tour of Java releases, one class for each: `Java8Features`, `Java11Features`, `Java17Features`, `Java21Features`, `Java25Features`. Each has a `main` method you can run.
+- `Hello.java`, next to this file, is a Java 25 compact source file. Run it with `java Hello.java`.
 
-The first commit is the code exactly as we wrote it in class. The second adds what we did not reach: the rest of `TicketOffice` with its tests, and the tour classes for Java 11, 21 and 25.
+The first commit is the code exactly as we wrote it in class. The commits after it add what we did not reach:
+
+- the rest of `TicketOffice` with its tests, and the tour classes for Java 11, 21 and 25;
+- the parts of the Java 8 and Java 17 tour we skipped (each method is marked 'Added after the session'), and three more `TicketOffice` methods that use newer Java: `bookAll`, `lastBooking` and `bookingsInBatches`.
 
 ## Running it
 

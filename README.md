@@ -19,7 +19,7 @@ You can also pick the tag in the branch menu on GitHub and use **Code > Download
 ## Session 1: Modern Java
 
 - `ro.frit.ticketing.domain` holds the domain: `Event`, `Venue`, `Booking`, `BookingRequest`, the sealed `BookingResult` and `TicketOffice` with the booking rules.
-- `ro.frit.features` holds the tour of Java releases, one class for each: `Java8Features`, `Java11Features`, `Java17Features`, `Java21Features`, `Java25Features`. Each has a `main` method you can run.
+- `ro.frit.features` holds the tour of Java releases, one class for each: `Java8Features`, `Java11Features`, `Java17Features`, `Java21Features`, `Java25Features`. Each has a `main` method you can run. From Session 2 on, they are only in the `session-01` tag.
 - `Hello.java`, next to this file, is a Java 25 compact source file. Run it with `java Hello.java`.
 
 The first commit is the code exactly as we wrote it in class. The commits after it add what we did not reach:
@@ -27,10 +27,51 @@ The first commit is the code exactly as we wrote it in class. The commits after 
 - the rest of `TicketOffice` with its tests, and the tour classes for Java 11, 21 and 25;
 - the parts of the Java 8 and Java 17 tour we skipped (each method is marked 'Added after the session'), and three more `TicketOffice` methods that use newer Java: `bookAll`, `lastBooking` and `bookingsInBatches`.
 
+## Session 2: Spring Framework and Spring Boot
+
+In Session 2 we removed the Java tour classes from `ro.frit.features`: each had its own `main` method, and a Spring Boot application needs exactly one. They are still in the `session-01` tag.
+
+- `TicketingApplication` starts the Spring Boot application.
+- `ro.frit.ticketing.config` creates the `TicketOffice` bean, filled with the events from the settings (`TicketingProperties`). The `local` profile, in `application-local.yml`, adds three events.
+- `ro.frit.ticketing.service` holds `TicketOffice`, which moved out of `domain`.
+- `ro.frit.ticketing.web` holds the REST API:
+  - `EventController`: `GET /events`, `GET /events/{id}`
+  - `BookingController`: `POST /events/{eventId}/bookings`, which turns each `BookingResult` into its own status code
+  - errors go out as a `ProblemDetail`
+- The tests for the web layer are `@WebMvcTest` tests: `EventControllerTest` and `BookingControllerTest`.
+
+### Tests first, code by AI
+
+We wrote the booking endpoint in this order:
+
+1. The behaviour, as a table of cases: `docs/booking-cases.md`.
+2. A test for each case, written by hand, in `BookingControllerTest`.
+3. Run the tests and see them fail.
+4. Commit the tests.
+5. Claude Code wrote `BookingController` to make them pass.
+6. We reviewed it: the tests pass, no test changed, and we read the code.
+
+`CLAUDE.md` holds the rules Claude Code reads at the start. `.claude/settings.json` stops it from editing anything under `src/test`. `.github/workflows/build.yml` runs `./gradlew build` on GitHub on every push.
+
+### Added after the session
+
+The commits after the class code:
+- tidy it up;
+- turn the list of cases into a table that names the test for each case;
+- add the Claude Code permission and the HTTP requests in `http/`;
+- add the four stretch goals, each marked 'Added after the session':
+  - `GET /events?city=cluj`
+  - `GET /events/top?n=3`
+  - `POST /events`
+  - `GET /events/{eventId}/bookings/{bookingId}`
+
 ## Running it
 
 You need JDK 25.
 
 ```
 ./gradlew test
+./gradlew bootRun --args='--spring.profiles.active=local'
 ```
+
+The application then listens on `http://localhost:8085`. Open `http/events.http` and `http/bookings.http` in IntelliJ to send the requests.

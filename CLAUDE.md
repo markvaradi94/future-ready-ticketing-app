@@ -6,7 +6,6 @@ A Spring Boot 4 application on Java 25, built with Gradle. Run the tests with `.
 
 - We write the tests by hand. They say what the system must do.
 - You write the code that makes them pass.
-- Never change, add or delete a file under `src/test`. If a test looks wrong, stop and say so.
 - When you are done, run `./gradlew test` and report the result.
 
 ## Code rules

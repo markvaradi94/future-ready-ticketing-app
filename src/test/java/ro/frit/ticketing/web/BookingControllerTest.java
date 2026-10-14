@@ -13,7 +13,7 @@ import ro.frit.ticketing.service.TicketOffice;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.MediaType.APPLICATION_JSON;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,5 +77,23 @@ class BookingControllerTest {
         mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content(VALID_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.startsAt").value("2026-03-01T20:00:00"));
+    }
+
+    @Test
+    void zeroSeatsIsBadRequest() throws Exception {
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+                        {"customerEmail":"ana@mail.ro","seats":0}"""))
+                .andExpect(status().isBadRequest());
+
+        verify(ticketOffice, never()).book(any());
+    }
+
+    @Test
+    void blankEmailIsBadRequest() throws Exception {
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+                        {"customerEmail":"","seats":2}"""))
+                .andExpect(status().isBadRequest());
+
+        verify(ticketOffice, never()).book(any());
     }
 }

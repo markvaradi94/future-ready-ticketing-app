@@ -1,5 +1,6 @@
 package ro.frit.ticketing.web;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,8 @@ public class BookingController {
     private final TicketOffice ticketOffice;
 
     @PostMapping
-    public ResponseEntity<?> book(@PathVariable String eventId, @RequestBody BookingRequest body) {
-        BookingRequest request = body.toBuilder().eventId(eventId).build();
+    public ResponseEntity<?> book(@PathVariable String eventId, @Valid @RequestBody BookingBody body) {
+        BookingRequest request = body.toRequest(eventId);
 
         return switch (ticketOffice.book(request)) {
             case BookingResult.Confirmed(var booking) -> ResponseEntity.status(CREATED).body(BookingResponse.from(booking));

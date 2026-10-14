@@ -1,0 +1,11 @@
+- POST  (/events/e1/bookings {"customerEmail":"ana@mail.ro","seats":2})
+    - add a booking to an event for a customer - CONFIRMED
+    - no such event
+    - not enough seats
+    - event already started
+    - invalid email
+    - invalid seat number
+    - incomplete request payload
+    - broken json
+    - wrong field type
+    - not json

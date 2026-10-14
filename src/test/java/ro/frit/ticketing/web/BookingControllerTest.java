@@ -11,11 +11,13 @@ import ro.frit.ticketing.domain.BookingResult;
 import ro.frit.ticketing.service.TicketOffice;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -193,5 +195,35 @@ class BookingControllerTest {
                 .andExpect(status().isUnsupportedMediaType());
 
         verify(ticketOffice, never()).book(any());
+    }
+
+    // Added after the session (stretch 2): GET /events/{eventId}/bookings/{bookingId}.
+
+    @Test
+    void returnsBookingById() throws Exception {
+        when(ticketOffice.findBooking("b1")).thenReturn(Optional.of(BOOKING));
+
+        mockMvc.perform(get("/events/e1/bookings/b1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("b1"))
+                .andExpect(jsonPath("$.seats").value(2));
+    }
+
+    @Test
+    void unknownBookingIsNotFound() throws Exception {
+        when(ticketOffice.findBooking("b9")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/events/e1/bookings/b9"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("No booking with id b9 for event e1"));
+    }
+
+    @Test
+    void bookingOfAnotherEventIsNotFound() throws Exception {
+        when(ticketOffice.findBooking("b1")).thenReturn(Optional.of(BOOKING));
+
+        mockMvc.perform(get("/events/e2/bookings/b1"))
+                .andExpect(status().isNotFound());
     }
 }

@@ -9,3 +9,15 @@ GET http://localhost:8085/events/rock-cluj
 
 ### Unknown event: 404 application/problem+json
 GET http://localhost:8085/events/nope
+
+### Upcoming events in a city (stretch 1)
+GET http://localhost:8085/events?city=cluj
+
+### The most booked events (stretch 3)
+GET http://localhost:8085/events/top?n=2
+
+### Create an event: 201 with a Location header (stretch 4)
+POST http://localhost:8085/events
+Content-Type: application/json
+
+{"name": "Folk Evening", "venueName": "Sala Polivalenta", "city": "Cluj", "startsAt": "2030-10-01T19:00:00", "capacity": 300}

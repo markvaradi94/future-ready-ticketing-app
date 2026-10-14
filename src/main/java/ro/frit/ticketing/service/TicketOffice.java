@@ -59,6 +59,19 @@ public class TicketOffice {
         return new BookingResult.Confirmed(booking);
     }
 
+    public Event addEvent(Event event) {
+        if (events.putIfAbsent(event.getId(), event) != null) {
+            throw new IllegalArgumentException("Duplicate event id " + event.getId());
+        }
+        return event;
+    }
+
+    public Optional<Booking> findBooking(String id) {
+        return bookings.stream()
+                .filter(booking -> booking.getId().equals(id))
+                .findFirst();
+    }
+
     public Optional<Event> findEvent(String id) {
         return Optional.ofNullable(events.get(id));
     }

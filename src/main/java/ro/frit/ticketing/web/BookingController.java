@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,5 +43,16 @@ public class BookingController {
                 yield ResponseEntity.of(problem).build();
             }
         };
+    }
+
+    // Added after the session (stretch 2). The filter on the event id matters:
+    // without it, a booking could be read through any event's URL.
+    @GetMapping("/{bookingId}")
+    public ResponseEntity<?> booking(@PathVariable String eventId, @PathVariable String bookingId) {
+        return ticketOffice.findBooking(bookingId)
+                .filter(booking -> booking.getEventId().equals(eventId))
+                .<ResponseEntity<?>>map(booking -> ResponseEntity.ok(BookingResponse.from(booking)))
+                .orElseGet(() -> ResponseEntity.of(ProblemDetail.forStatusAndDetail(
+                        NOT_FOUND, "No booking with id " + bookingId + " for event " + eventId)).build());
     }
 }

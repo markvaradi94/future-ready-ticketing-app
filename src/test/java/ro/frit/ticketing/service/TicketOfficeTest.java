@@ -207,6 +207,42 @@ class TicketOfficeTest {
         assertEquals(List.of(2, 1), batches.stream().map(List::size).toList());
     }
 
+    // Added after the session: the TicketOffice methods behind the Session 2 stretch goals.
+
+    @Test
+    void addedEventCanBeFound() {
+        TicketOffice office = new TicketOffice(List.of());
+
+        office.addEvent(event("e1", 100, 0));
+
+        assertEquals("e1", office.findEvent("e1").orElseThrow().getId());
+    }
+
+    @Test
+    void addingAnExistingEventIdIsRejected() {
+        TicketOffice office = new TicketOffice(List.of(event("e1", 100, 0)));
+
+        assertThrows(IllegalArgumentException.class, () -> office.addEvent(event("e1", 50, 0)));
+    }
+
+    @Test
+    void confirmedBookingCanBeFoundById() {
+        TicketOffice office = new TicketOffice(List.of(event("e1", 100, 0)));
+        BookingResult.Confirmed confirmed = assertInstanceOf(BookingResult.Confirmed.class,
+                office.book(new BookingRequest("e1", "ana@mail.ro", 2)));
+
+        Optional<Booking> found = office.findBooking(confirmed.booking().getId());
+
+        assertEquals(confirmed.booking(), found.orElseThrow());
+    }
+
+    @Test
+    void unknownBookingIdIsEmpty() {
+        TicketOffice office = new TicketOffice(List.of(event("e1", 100, 0)));
+
+        assertTrue(office.findBooking("nope").isEmpty());
+    }
+
     private static Event event(String id, int capacity, int bookedSeats) {
         return event(id, "Event " + id, "Cluj", NOW.plusDays(7), capacity, bookedSeats);
     }

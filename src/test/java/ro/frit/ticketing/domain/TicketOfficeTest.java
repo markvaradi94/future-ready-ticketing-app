@@ -1,6 +1,7 @@
 package ro.frit.ticketing.domain;
 
 import org.junit.jupiter.api.Test;
+import ro.frit.ticketing.service.TicketOffice;
 
 import java.time.LocalDateTime;
 import java.util.List;

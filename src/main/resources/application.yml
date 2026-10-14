@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: ticketing
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  port: 8090

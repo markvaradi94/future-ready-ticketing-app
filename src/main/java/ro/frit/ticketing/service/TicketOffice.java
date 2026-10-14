@@ -1,10 +1,16 @@
-package ro.frit.ticketing.domain;
+package ro.frit.ticketing.service;
+
+import ro.frit.ticketing.domain.Booking;
+import ro.frit.ticketing.domain.BookingRequest;
+import ro.frit.ticketing.domain.BookingResult;
+import ro.frit.ticketing.domain.Event;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Gatherers;
 
+//@Service
 public class TicketOffice {
     private final Map<String, Event> events = new LinkedHashMap<>();
     private final List<Booking> bookings = new ArrayList<>();
@@ -15,6 +21,10 @@ public class TicketOffice {
                 throw new IllegalArgumentException("Duplicate event id " + event.getId());
             }
         });
+    }
+
+    public List<Event> allEvents() {
+        return events.values().stream().toList();
     }
 
     public BookingResult book(BookingRequest request) {

@@ -18,7 +18,6 @@ public class TicketingConfig {
                 .map(TicketingConfig::toEvent)
                 .toList();
 
-        System.out.printf(">>>> Spring is creating TicketOffice with %s events%n", events.size());
         return new TicketOffice(events);
     }
 

@@ -12,9 +12,10 @@ import ro.frit.ticketing.service.TicketOffice;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.MediaType.APPLICATION_JSON;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,7 +46,7 @@ class BookingControllerTest {
     void confirmedBookingIsCreated() throws Exception {
         when(ticketOffice.book(VALID_REQUEST)).thenReturn(new BookingResult.Confirmed(BOOKING));
 
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content(VALID_BODY))
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content(VALID_BODY))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value("b1"))
                 .andExpect(jsonPath("$.eventId").value("e1"))
@@ -58,7 +59,7 @@ class BookingControllerTest {
     void eventIdComesFromThePathNotTheBody() throws Exception {
         when(ticketOffice.book(VALID_REQUEST)).thenReturn(new BookingResult.Confirmed(BOOKING));
 
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"eventId":"other","customerEmail":"ana@mail.ro","seats":2}"""))
                 .andExpect(status().isCreated());
 
@@ -70,7 +71,7 @@ class BookingControllerTest {
         when(ticketOffice.book(new BookingRequest("e9", "ana@mail.ro", 2)))
                 .thenReturn(new BookingResult.UnknownEvent("e9"));
 
-        mockMvc.perform(post("/events/e9/bookings").contentType(APPLICATION_JSON.toString()).content(VALID_BODY))
+        mockMvc.perform(post("/events/e9/bookings").contentType(APPLICATION_JSON).content(VALID_BODY))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(404))
@@ -82,7 +83,7 @@ class BookingControllerTest {
     void soldOutIsConflictWithAvailableSeats() throws Exception {
         when(ticketOffice.book(VALID_REQUEST)).thenReturn(new BookingResult.SoldOut("e1", 1));
 
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content(VALID_BODY))
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content(VALID_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(409))
@@ -95,7 +96,7 @@ class BookingControllerTest {
         when(ticketOffice.book(VALID_REQUEST))
                 .thenReturn(new BookingResult.AlreadyStarted("e1", LocalDateTime.of(2026, 3, 1, 20, 0)));
 
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content(VALID_BODY))
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content(VALID_BODY))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(409))
@@ -105,7 +106,7 @@ class BookingControllerTest {
 
     @Test
     void zeroSeatsIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"customerEmail":"ana@mail.ro","seats":0}"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
@@ -115,7 +116,7 @@ class BookingControllerTest {
 
     @Test
     void negativeSeatsIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"customerEmail":"ana@mail.ro","seats":-1}"""))
                 .andExpect(status().isBadRequest());
 
@@ -124,7 +125,7 @@ class BookingControllerTest {
 
     @Test
     void blankEmailIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"customerEmail":"","seats":2}"""))
                 .andExpect(status().isBadRequest());
 
@@ -133,7 +134,7 @@ class BookingControllerTest {
 
     @Test
     void invalidEmailIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"customerEmail":"not-an-email","seats":2}"""))
                 .andExpect(status().isBadRequest());
 
@@ -142,7 +143,7 @@ class BookingControllerTest {
 
     @Test
     void missingEmailIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"seats":2}"""))
                 .andExpect(status().isBadRequest());
 
@@ -151,7 +152,7 @@ class BookingControllerTest {
 
     @Test
     void missingSeatsIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"customerEmail":"ana@mail.ro"}"""))
                 .andExpect(status().isBadRequest());
 
@@ -160,7 +161,7 @@ class BookingControllerTest {
 
     @Test
     void brokenJsonIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"customerEmail":"ana@mail.ro","seats":"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
@@ -170,7 +171,7 @@ class BookingControllerTest {
 
     @Test
     void wrongFieldTypeIsBadRequest() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON.toString()).content("""
+        mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content("""
                         {"customerEmail":"ana@mail.ro","seats":"two"}"""))
                 .andExpect(status().isBadRequest());
 
@@ -179,7 +180,7 @@ class BookingControllerTest {
 
     @Test
     void notJsonIsUnsupportedMediaType() throws Exception {
-        mockMvc.perform(post("/events/e1/bookings").contentType("text/plain").content("ana@mail.ro, 2 seats"))
+        mockMvc.perform(post("/events/e1/bookings").contentType(TEXT_PLAIN).content("ana@mail.ro, 2 seats"))
                 .andExpect(status().isUnsupportedMediaType())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
 

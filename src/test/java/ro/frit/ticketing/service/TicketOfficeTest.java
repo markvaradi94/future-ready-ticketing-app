@@ -1,7 +1,11 @@
-package ro.frit.ticketing.domain;
+package ro.frit.ticketing.service;
 
 import org.junit.jupiter.api.Test;
-import ro.frit.ticketing.service.TicketOffice;
+import ro.frit.ticketing.domain.Booking;
+import ro.frit.ticketing.domain.BookingRequest;
+import ro.frit.ticketing.domain.BookingResult;
+import ro.frit.ticketing.domain.Event;
+import ro.frit.ticketing.domain.Venue;
 
 import java.time.LocalDateTime;
 import java.util.List;

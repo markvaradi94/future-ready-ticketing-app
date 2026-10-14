@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Gatherers;
 
-//@Service
 public class TicketOffice {
     private final Map<String, Event> events = new LinkedHashMap<>();
     private final List<Booking> bookings = new ArrayList<>();

@@ -1,0 +1,26 @@
+### Start the app first with the local profile:
+### ./gradlew bootRun --args='--spring.profiles.active=local'
+
+### Book 2 seats: 201 with the booking
+POST http://localhost:8085/events/rock-cluj/bookings
+Content-Type: application/json
+
+{"customerEmail": "ana@mail.ro", "seats": 2}
+
+### Not enough seats: 409 with availableSeats
+POST http://localhost:8085/events/jazz-cluj/bookings
+Content-Type: application/json
+
+{"customerEmail": "ana@mail.ro", "seats": 500}
+
+### Unknown event: 404
+POST http://localhost:8085/events/nope/bookings
+Content-Type: application/json
+
+{"customerEmail": "ana@mail.ro", "seats": 2}
+
+### Zero seats: 400, the office is never called
+POST http://localhost:8085/events/rock-cluj/bookings
+Content-Type: application/json
+
+{"customerEmail": "ana@mail.ro", "seats": 0}

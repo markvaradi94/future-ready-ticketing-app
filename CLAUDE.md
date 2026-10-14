@@ -10,7 +10,7 @@ A Spring Boot 4 application on Java 25, built with Gradle. Run the tests with `.
 
 ## Code rules
 
-- The base package is `ro.frit.ticketing`. `domain` has the business rules, `web` has the controllers, `config` has the Spring configuration.
+- The base package is `ro.frit.ticketing`. `domain` has the model, `service` has `TicketOffice` with the booking rules, `web` has the controllers, `config` has the Spring configuration.
 - Nothing in `domain` imports Spring.
 - Constructor injection with Lombok's `@RequiredArgsConstructor`. No field injection.
 - Errors go out as `ProblemDetail`.

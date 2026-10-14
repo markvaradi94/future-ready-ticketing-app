@@ -1,0 +1,11 @@
+### Start the app first with the local profile:
+### ./gradlew bootRun --args='--spring.profiles.active=local'
+
+### All events
+GET http://localhost:8085/events
+
+### One event
+GET http://localhost:8085/events/rock-cluj
+
+### Unknown event: 404 application/problem+json
+GET http://localhost:8085/events/nope

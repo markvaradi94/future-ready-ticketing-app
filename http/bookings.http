@@ -19,7 +19,7 @@ Content-Type: application/json
 
 {"customerEmail": "ana@mail.ro", "seats": 2}
 
-### Zero seats: 400, the office is never called
+### Zero seats: 400, the service is never called
 POST http://localhost:8085/events/rock-cluj/bookings
 Content-Type: application/json
 

@@ -65,6 +65,31 @@ The commits after the class code:
   - `POST /events`
   - `GET /events/{eventId}/bookings/{bookingId}`
 
+## Before Session 3: the code organised like an enterprise service
+
+Between Sessions 2 and 3 the code was reorganised the way most Spring teams organise a service: by feature, with one controller, service and repository for each. It does exactly what it did at the end of Session 2, and the HTTP API is unchanged.
+
+```
+ro.frit.ticketing
+├── event      Event, Venue, EventController, EventService, EventRepository, EventMapper,
+│              EventNotFoundException, NotEnoughSeatsException, EventAlreadyStartedException,
+│              dto/ CreateEventRequest, EventResponse
+├── booking    Booking, BookingController, BookingService, BookingRepository, BookingMapper,
+│              BookingNotFoundException, dto/ CreateBookingRequest, BookingResponse
+├── shared     error/ NotFoundException, ConflictException, GlobalExceptionHandler
+└── config     TicketingProperties, DataSeeder
+```
+
+What changed, and why:
+
+- **`TicketOffice` is split** into `EventService` and `BookingService`. `EventService` owns the event rules: `reserveSeats` checks that the event has not started and has enough seats. `BookingService` asks it to reserve the seats, then stores the booking.
+- **Repositories.** `EventRepository` and `BookingRepository` keep the data in memory, with the method names Spring Data uses (`save`, `findById`, `findAll`). In Session 3 they become MongoDB repositories.
+- **Errors are exceptions.** The sealed `BookingResult` is gone from the application (it is still in the `session-02` tag). A service throws, for example, `NotEnoughSeatsException`; `GlobalExceptionHandler` turns every `NotFoundException` into a 404 and every `ConflictException` into a 409, as a `ProblemDetail`. The controllers only describe the happy path.
+- **Validation with annotations only.** `Event`, `Venue` and `Booking` declare their rules with Jakarta Bean Validation (`@NotBlank`, `@Positive`, `@Email`, ...) instead of `if` checks in the constructor. The request DTOs are checked when a request arrives (`@Valid` in the controller, 400 if invalid); the entities are checked when they are saved (`@Validated` repositories with a `@Valid` parameter on `save`).
+- **DTOs and mappers.** Each feature has its request and response records in `dto`, and a mapper (`EventMapper`, `BookingMapper`) that converts between them and the entity. The services return DTOs, so entities never leave the service.
+- **`DataSeeder`** replaces `TicketingConfig`: under the `local` profile it saves the seed events when the application starts.
+- **Tests**: `EventServiceTest` and `BookingServiceTest` replace `TicketOfficeTest`; the controller tests mock the services. The Java tour methods `bookAll`, `lastBooking` and `bookingsInBatches` were removed; they are in the `session-01` and `session-02` tags.
+
 ## Running it
 
 You need JDK 25.

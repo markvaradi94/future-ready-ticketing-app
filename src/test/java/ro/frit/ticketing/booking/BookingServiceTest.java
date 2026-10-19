@@ -1,6 +1,10 @@
 package ro.frit.ticketing.booking;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import ro.frit.ticketing.TestcontainersConfiguration;
 import ro.frit.ticketing.booking.dto.BookingResponse;
 import ro.frit.ticketing.booking.dto.CreateBookingRequest;
 import ro.frit.ticketing.event.Event;
@@ -19,20 +23,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Unit test (no Spring): booking seats, with the real {@link EventService} and the in-memory repositories. The event
- * rules themselves are tested in {@code EventServiceTest}.
- */
+// Persistence test: booking seats against Postgres in Docker. Each test runs in a transaction that is rolled back.
+@DataJpaTest
+@Import({TestcontainersConfiguration.class,
+        BookingService.class, BookingMapper.class, EventService.class, EventMapper.class})
 class BookingServiceTest {
-
     private static final LocalDateTime NOW = LocalDateTime.now();
 
-    private final EventRepository eventRepository = new EventRepository();
-    private final BookingRepository bookingRepository = new BookingRepository();
-    private final BookingService bookingService = new BookingService(
-            bookingRepository,
-            new BookingMapper(),
-            new EventService(new EventMapper(), eventRepository));
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
+    private BookingRepository bookingRepository;
+    @Autowired
+    private BookingService bookingService;
 
     @Test
     void confirmedBookingIsStored() {

@@ -1,0 +1,29 @@
+### The JPA demo. Start Postgres and pgAdmin first: docker compose up -d
+### Then: ./gradlew bootRun --args='--spring.profiles.active=local'
+
+### 1. A derived query: findByVenueCityIgnoreCase, in the log as a select with a where
+GET http://localhost:8085/events?city=cluj
+
+### 2. A write: a booking on Rock Night (the log shows the select, then the inserts and the update)
+POST http://localhost:8085/events/rock-cluj/bookings
+Content-Type: application/json
+
+{"customerEmail": "ana@mail.ro", "seats": 2}
+
+### 3. More bookings, on the other two events
+POST http://localhost:8085/events/jazz-cluj/bookings
+Content-Type: application/json
+
+{"customerEmail": "ion@mail.ro", "seats": 4}
+
+### 4.
+POST http://localhost:8085/events/opera-iasi/bookings
+Content-Type: application/json
+
+{"customerEmail": "maria@mail.ro", "seats": 3}
+
+### 5. N+1: one select for the bookings, then one per event
+GET http://localhost:8085/bookings/seats-per-event
+
+### 6. The fix: one select with a join
+GET http://localhost:8085/bookings/seats-per-event/fetch-join

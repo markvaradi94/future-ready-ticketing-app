@@ -5,18 +5,26 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-// The constraints are checked when the event is saved: EventRepository.save takes a @Valid Event.
+// One row in the events table; the venue's two fields are columns of the same row.
+// Hibernate checks the constraints before every insert and update.
 @Getter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @EqualsAndHashCode(of = "id")
+@Entity
+@Table(name = "events")
 public class Event {
+    @Id
     @NotBlank
     private String id;
 
@@ -25,6 +33,7 @@ public class Event {
 
     @NotNull
     @Valid
+    @Embedded
     private Venue venue;
 
     @NotNull

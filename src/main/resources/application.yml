@@ -1,6 +1,19 @@
 spring:
   application:
     name: ticketing
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ticketing
+    username: ticketing
+    password: ticketing
+  jpa:
+    hibernate:
+      # Hibernate creates the tables from the entities at every start. Fine for a demo; real apps use validate + Flyway.
+      ddl-auto: create
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
   mvc:
     problemdetails:
       enabled: true

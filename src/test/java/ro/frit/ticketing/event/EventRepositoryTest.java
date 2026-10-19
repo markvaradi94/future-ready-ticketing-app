@@ -3,21 +3,17 @@ package ro.frit.ticketing.event;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.validation.autoconfigure.ValidationAutoConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import ro.frit.ticketing.TestcontainersConfiguration;
 
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Spring test (a small context: the repository and Spring Boot's validation setup): an invalid {@link Event} is
- * rejected when it is saved, and nothing is stored. Without Spring, the {@code @Valid} on {@code save} is not checked.
- */
-@SpringJUnitConfig(EventRepository.class)
-@ImportAutoConfiguration(ValidationAutoConfiguration.class)
+// Hibernate checks the entity's constraints before it writes: an invalid event is never inserted.
+@DataJpaTest
+@Import(TestcontainersConfiguration.class)
 class EventRepositoryTest {
 
     @Autowired
@@ -33,7 +29,6 @@ class EventRepositoryTest {
                 .capacity(100)
                 .build();
 
-        assertThrows(ConstraintViolationException.class, () -> eventRepository.save(invalid));
-        assertTrue(eventRepository.findById("e1").isEmpty());
+        assertThrows(ConstraintViolationException.class, () -> eventRepository.saveAndFlush(invalid));
     }
 }

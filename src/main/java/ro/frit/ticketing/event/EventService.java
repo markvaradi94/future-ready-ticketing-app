@@ -37,8 +37,7 @@ public class EventService {
 
     public List<EventResponse> findUpcomingIn(String city) {
         LocalDateTime now = LocalDateTime.now();
-        return toResponses(eventRepository.findAll().stream()
-                .filter(event -> event.getVenue().city().equalsIgnoreCase(city))
+        return toResponses(eventRepository.findByVenueCityIgnoreCase(city).stream()
                 .filter(event -> event.getStartsAt().isAfter(now))
                 .sorted(Comparator.comparing(Event::getStartsAt))
                 .toList());

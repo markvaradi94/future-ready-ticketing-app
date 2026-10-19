@@ -1,6 +1,10 @@
 package ro.frit.ticketing.event;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import ro.frit.ticketing.TestcontainersConfiguration;
 import ro.frit.ticketing.event.dto.CreateEventRequest;
 import ro.frit.ticketing.event.dto.EventResponse;
 
@@ -11,16 +15,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Unit test (no Spring): the event rules, with the in-memory repository. The dates are relative to now, at least a
- * day away, so the tests do not depend on when they run.
- */
+// Persistence test: the event rules against Postgres in Docker. Each test runs in a transaction that is rolled back.
+@DataJpaTest
+@Import({TestcontainersConfiguration.class, EventService.class, EventMapper.class})
 class EventServiceTest {
-
     private static final LocalDateTime NOW = LocalDateTime.now();
 
-    private final EventRepository eventRepository = new EventRepository();
-    private final EventService eventService = new EventService(new EventMapper(), eventRepository);
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
+    private EventService eventService;
 
     @Test
     void findsAnEventById() {

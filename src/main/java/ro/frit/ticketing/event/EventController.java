@@ -24,7 +24,6 @@ import java.util.List;
 public class EventController {
     private final EventService eventService;
 
-    // ?city=cluj lists the upcoming events in that city.
     @GetMapping
     public List<EventResponse> findAll(@RequestParam(required = false) String city) {
         return city == null || city.isBlank()
@@ -32,7 +31,6 @@ public class EventController {
                 : eventService.findUpcomingIn(city);
     }
 
-    // /top is more specific than /{id}, so Spring picks this method for it.
     @GetMapping("/top")
     public List<EventResponse> findTop(@RequestParam(defaultValue = "3") @Positive int n) {
         return eventService.findTopByBookedSeats(n);

@@ -32,7 +32,7 @@ class BookingServiceTest {
     private final BookingService bookingService = new BookingService(
             bookingRepository,
             new BookingMapper(),
-            new EventService(eventRepository, new EventMapper()));
+            new EventService(new EventMapper(), eventRepository));
 
     @Test
     void confirmedBookingIsStored() {

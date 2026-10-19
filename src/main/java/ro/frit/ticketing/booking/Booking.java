@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-// The constraints are checked when the booking is saved: BookingRepository.save takes a @Valid Booking.
 @Getter
 @ToString
 @NoArgsConstructor

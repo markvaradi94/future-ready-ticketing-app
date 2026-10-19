@@ -9,13 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Keeps the events in memory for now. The method names are the ones Spring Data uses, so in Session 3 this class
- * becomes a {@code MongoRepository} interface and the service does not notice.
- * <p>
- * {@code @Validated} makes Spring check the {@code @Valid} parameter: saving an {@link Event} that breaks one of its
- * constraints throws a {@code ConstraintViolationException}, and nothing is stored.
- */
 @Repository
 @Validated
 public class EventRepository {

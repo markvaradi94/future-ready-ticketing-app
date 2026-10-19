@@ -10,14 +10,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Everything about events: reading them, creating them, and the rules for taking seats from one.
- */
 @Service
 @RequiredArgsConstructor
 public class EventService {
-    private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final EventRepository eventRepository;
 
     public List<EventResponse> findAll() {
         return toResponses(eventRepository.findAll());
@@ -55,10 +52,6 @@ public class EventService {
                 .toList());
     }
 
-    /**
-     * Takes {@code seats} seats from the event, or throws if the event is unknown, has started, or is too full.
-     * The checks run in this order: an event that has started is reported as started, even when it is also full.
-     */
     public void reserveSeats(String eventId, int seats) {
         Event event = getEvent(eventId);
 

@@ -20,7 +20,7 @@ class EventServiceTest {
     private static final LocalDateTime NOW = LocalDateTime.now();
 
     private final EventRepository eventRepository = new EventRepository();
-    private final EventService eventService = new EventService(eventRepository, new EventMapper());
+    private final EventService eventService = new EventService(new EventMapper(), eventRepository);
 
     @Test
     void findsAnEventById() {

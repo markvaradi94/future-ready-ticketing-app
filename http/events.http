@@ -1,23 +1,31 @@
 ### Start the app first with the local profile:
 ### ./gradlew bootRun --args='--spring.profiles.active=local'
+### Postman users: import postman/ticketing-app.postman_collection.json instead.
+
+@host = http://localhost:8085
 
 ### All events
-GET http://localhost:8085/events
+GET {{host}}/events
 
 ### One event
-GET http://localhost:8085/events/rock-cluj
+GET {{host}}/events/rock-cluj
 
 ### Unknown event: 404 application/problem+json
-GET http://localhost:8085/events/nope
+GET {{host}}/events/nope
 
-### Upcoming events in a city (stretch 1)
-GET http://localhost:8085/events?city=cluj
+### Upcoming events in a city, sorted by start
+GET {{host}}/events?city=cluj
 
-### The most booked events (stretch 3)
-GET http://localhost:8085/events/top?n=2
+### The most booked events
+GET {{host}}/events/top?n=2
 
-### Create an event: 201 with a Location header (stretch 4)
-POST http://localhost:8085/events
+### Create an event: 201 with a Location header. The id is kept for the next request.
+POST {{host}}/events
 Content-Type: application/json
 
 {"name": "Folk Evening", "venueName": "Sala Polivalenta", "city": "Cluj", "startsAt": "2030-10-01T19:00:00", "capacity": 300}
+
+> {% client.global.set("eventId", response.body.id); %}
+
+### The event just created
+GET {{host}}/events/{{eventId}}

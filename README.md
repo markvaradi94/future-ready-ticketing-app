@@ -90,13 +90,45 @@ What changed, and why:
 - **`DataSeeder`** replaces `TicketingConfig`: under the `local` profile it saves the seed events when the application starts.
 - **Tests**: `EventServiceTest` and `BookingServiceTest` replace `TicketOfficeTest`; the controller tests mock the services. The Java tour methods `bookAll`, `lastBooking` and `bookingsInBatches` were removed; they are in the `session-01` and `session-02` tags.
 
+## Session 3: SQL vs NoSQL, our data on MongoDB
+
+The repositories became Spring Data MongoDB repositories, so events and bookings are stored in MongoDB.
+
+- `Event` and `Booking` are `@Document`s: an event is one document with its venue embedded; a booking is a document of its own that points to its event by `eventId`. MongoDB generates the ids.
+- `EventRepository` and `BookingRepository` are `MongoRepository` interfaces. `findByVenueCityIgnoreCaseAndStartsAtAfterOrderByStartsAt` is a query Spring Data writes from the method name.
+- `config/MongoConfig` validates every entity before it is saved, so an invalid event never reaches the database.
+- `DataSeeder` seeds the three events only when the collection is empty, so a restart keeps the booked seats.
+- `compose.yml` runs MongoDB on your machine. The tests start their own MongoDB in Docker with Testcontainers: `TestcontainersConfiguration` holds one container for the whole test run, and `@MongoPersistenceTest` bundles it with the validation.
+- Two profiles pick the database: `local` uses the compose MongoDB, `cloud` uses MongoDB Atlas (see below).
+
+### Added after the session
+
+In class we reached the first lab round. The commit after it adds the other rounds and the stretch goal: validation before every save, the query from a method name, the seeder that only fills an empty collection, and `DataSeederTest`. Two fixes came with it:
+
+- the test container is a `static` **field**; a static *method* is ignored without a warning, and the tests then quietly use the compose MongoDB;
+- `application-cloud.yml` reads the Atlas connection from environment variables, so no password is ever in a file.
+
 ## Running it
 
-You need JDK 25.
+You need JDK 25 and Docker.
 
 ```
+docker compose up -d
 ./gradlew test
 ./gradlew bootRun --args='--spring.profiles.active=local'
 ```
 
-The application then listens on `http://localhost:8085`. Open `http/events.http` and `http/bookings.http` in IntelliJ to send the requests.
+The application then listens on `http://localhost:8085`. To send requests:
+
+- **IntelliJ IDEA Ultimate:** open `http/events.http` and `http/bookings.http`.
+- **Postman** (any edition of IntelliJ): import `postman/ticketing-app.postman_collection.json`. Each request checks its status code, and creating an event or a booking keeps its id for the next request.
+
+To run against your MongoDB Atlas cluster instead, set three environment variables (your cluster's host, your database user, its password) and use the `cloud` profile:
+
+```
+MONGODB_HOST      e.g. cluster0.abcde.mongodb.net
+MONGODB_USERNAME  the database user from Atlas "Database Access"
+MONGODB_PASSWORD  its password; never write it in a file
+
+./gradlew bootRun --args='--spring.profiles.active=cloud'
+```

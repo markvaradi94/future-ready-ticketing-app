@@ -1,29 +1,34 @@
 ### Start the app first with the local profile:
 ### ./gradlew bootRun --args='--spring.profiles.active=local'
+### Postman users: import postman/ticketing-app.postman_collection.json instead.
 
-### Book 2 seats: 201 with the booking
-POST http://localhost:8085/events/rock-cluj/bookings
+@host = http://localhost:8085
+
+### Book 2 seats: 201 with the booking. The id is kept for the next request.
+POST {{host}}/events/rock-cluj/bookings
 Content-Type: application/json
 
 {"customerEmail": "ana@mail.ro", "seats": 2}
 
+> {% client.global.set("bookingId", response.body.id); %}
+
+### The booking just made
+GET {{host}}/events/rock-cluj/bookings/{{bookingId}}
+
 ### Not enough seats: 409 with availableSeats
-POST http://localhost:8085/events/jazz-cluj/bookings
+POST {{host}}/events/jazz-cluj/bookings
 Content-Type: application/json
 
 {"customerEmail": "ana@mail.ro", "seats": 500}
 
 ### Unknown event: 404
-POST http://localhost:8085/events/nope/bookings
+POST {{host}}/events/nope/bookings
 Content-Type: application/json
 
 {"customerEmail": "ana@mail.ro", "seats": 2}
 
 ### Zero seats: 400, the service is never called
-POST http://localhost:8085/events/rock-cluj/bookings
+POST {{host}}/events/rock-cluj/bookings
 Content-Type: application/json
 
 {"customerEmail": "ana@mail.ro", "seats": 0}
-
-### Read one booking (stretch 2): copy the id from the 201 above
-GET http://localhost:8085/events/rock-cluj/bookings/PASTE-THE-BOOKING-ID

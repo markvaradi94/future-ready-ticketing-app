@@ -22,10 +22,13 @@ public class DataSeeder implements ApplicationRunner {
 
     @Override
     public void run(@NonNull ApplicationArguments args) {
+        if (eventRepository.count() > 0) {
+            log.info("Events already stored, nothing to seed");
+            return;
+        }
         ticketingProperties.seedEvents().stream()
                 .map(DataSeeder::toEvent)
                 .forEach(eventRepository::save);
-
         log.info("Seeded {} events", ticketingProperties.seedEvents().size());
     }
 

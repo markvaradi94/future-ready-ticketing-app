@@ -1,39 +1,61 @@
 package ro.frit.ticketing.event;
 
 import jakarta.validation.ConstraintViolationException;
+import org.bson.Document;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.validation.autoconfigure.ValidationAutoConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import ro.frit.ticketing.MongoPersistenceTest;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Spring test (a small context: the repository and Spring Boot's validation setup): an invalid {@link Event} is
- * rejected when it is saved, and nothing is stored. Without Spring, the {@code @Valid} on {@code save} is not checked.
+ * Persistence test ({@link MongoPersistenceTest}): how an {@link Event} is stored, and that an
+ * invalid one is never stored.
  */
-@SpringJUnitConfig(EventRepository.class)
-@ImportAutoConfiguration(ValidationAutoConfiguration.class)
+@MongoPersistenceTest
 class EventRepositoryTest {
 
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @BeforeEach
+    void emptyTheCollection() {
+        eventRepository.deleteAll();
+    }
+
+    @Test
+    void theVenueIsEmbeddedInTheEventDocument() {
+        eventRepository.save(event("e1", "Concert"));
+
+        Document stored = mongoTemplate.findById("e1", Document.class, "events");
+
+        assertEquals("Concert", stored.getString("name"));
+        assertEquals("Cluj", stored.get("venue", Document.class).getString("city"));
+    }
+
     @Test
     void invalidEventIsNotSaved() {
-        Event invalid = Event.builder()
-                .id("e1")
-                .name(" ")
+        assertThrows(ConstraintViolationException.class, () -> eventRepository.save(event("e1", " ")));
+
+        assertTrue(eventRepository.findById("e1").isEmpty());
+    }
+
+    private static Event event(String id, String name) {
+        return Event.builder()
+                .id(id)
+                .name(name)
                 .venue(new Venue("Arena", "Cluj"))
                 .startsAt(LocalDateTime.now().plusDays(7))
                 .capacity(100)
                 .build();
-
-        assertThrows(ConstraintViolationException.class, () -> eventRepository.save(invalid));
-        assertTrue(eventRepository.findById("e1").isEmpty());
     }
 }

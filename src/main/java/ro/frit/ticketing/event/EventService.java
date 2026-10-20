@@ -8,7 +8,6 @@ import ro.frit.ticketing.event.dto.EventResponse;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +24,7 @@ public class EventService {
     }
 
     public EventResponse create(CreateEventRequest request) {
-        Event event = eventMapper.toEntity(UUID.randomUUID().toString(), request);
+        Event event = eventMapper.toEntity(request);
         return eventMapper.toResponse(eventRepository.save(event));
     }
 
@@ -36,12 +35,8 @@ public class EventService {
     }
 
     public List<EventResponse> findUpcomingIn(String city) {
-        LocalDateTime now = LocalDateTime.now();
-        return toResponses(eventRepository.findAll().stream()
-                .filter(event -> event.getVenue().city().equalsIgnoreCase(city))
-                .filter(event -> event.getStartsAt().isAfter(now))
-                .sorted(Comparator.comparing(Event::getStartsAt))
-                .toList());
+        return toResponses(eventRepository.findByVenueCityIgnoreCaseAndStartsAtAfterOrderByStartsAt(
+                city, LocalDateTime.now()));
     }
 
     public List<EventResponse> findTopByBookedSeats(int limit) {

@@ -12,9 +12,8 @@ import java.time.LocalDateTime;
 @Component
 public class BookingMapper {
 
-    public Booking toEntity(String id, String eventId, CreateBookingRequest request, LocalDateTime bookedAt) {
+    public Booking toEntity(String eventId, CreateBookingRequest request, LocalDateTime bookedAt) {
         return Booking.builder()
-                .id(id)
                 .eventId(eventId)
                 .customerEmail(request.customerEmail())
                 .seats(request.seats())

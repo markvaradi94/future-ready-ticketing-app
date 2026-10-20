@@ -1,6 +1,11 @@
 spring:
   application:
     name: ticketing
+  mongodb:
+    database: ticketing
+  profiles:
+    group:
+      cloud: local
   mvc:
     problemdetails:
       enabled: true

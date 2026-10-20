@@ -1,0 +1,11 @@
+# The cloud profile: everything from local, with the database in MongoDB Atlas.
+#   ./gradlew bootRun --args='--spring.profiles.active=cloud'
+# The MONGODB_* variables come from the environment. The password is never written in a file; the host and
+# the user differ for each of you, so they come from outside too.
+spring:
+  mongodb:
+    protocol: mongodb+srv
+    host: ${MONGODB_HOST}
+    username: ${MONGODB_USERNAME}
+    password: ${MONGODB_PASSWORD}
+    database: ${MONGODB_DATABASE:ticketing}

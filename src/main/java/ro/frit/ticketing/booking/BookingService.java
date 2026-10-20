@@ -8,8 +8,9 @@ import ro.frit.ticketing.event.EventService;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.MILLIS;
 
 /**
  * Books seats. The rules about the event itself (does it exist, has it started, are there seats) belong to
@@ -25,8 +26,7 @@ public class BookingService {
     public BookingResponse book(String eventId, CreateBookingRequest request) {
         eventService.reserveSeats(eventId, request.seats());
 
-        Booking booking = bookingMapper.toEntity(
-                UUID.randomUUID().toString(), eventId, request, LocalDateTime.now());
+        Booking booking = bookingMapper.toEntity(eventId, request, LocalDateTime.now().truncatedTo(MILLIS));
         return bookingMapper.toResponse(bookingRepository.save(booking));
     }
 

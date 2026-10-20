@@ -1,26 +1,34 @@
 package ro.frit.ticketing.event;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import ro.frit.ticketing.MongoPersistenceTest;
 import ro.frit.ticketing.event.dto.CreateEventRequest;
 import ro.frit.ticketing.event.dto.EventResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit test (no Spring): the event rules, with the in-memory repository. The dates are relative to now, at least a
- * day away, so the tests do not depend on when they run.
- */
+@MongoPersistenceTest
+@Import({EventMapper.class, EventService.class})
 class EventServiceTest {
-
     private static final LocalDateTime NOW = LocalDateTime.now();
 
-    private final EventRepository eventRepository = new EventRepository();
-    private final EventService eventService = new EventService(new EventMapper(), eventRepository);
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private EventService eventService;
+
+    @BeforeEach
+    void setUp() {
+        eventRepository.deleteAll();
+    }
 
     @Test
     void findsAnEventById() {
@@ -132,7 +140,7 @@ class EventServiceTest {
 
     @Test
     void startedEventIsRejected() {
-        LocalDateTime startsAt = NOW.minusDays(1);
+        LocalDateTime startsAt = NOW.minusDays(1).truncatedTo(MILLIS);
         eventRepository.save(event("e1", "Concert", "Cluj", startsAt, 100, 0));
 
         EventAlreadyStartedException exception = assertThrows(EventAlreadyStartedException.class,

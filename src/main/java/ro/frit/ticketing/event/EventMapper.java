@@ -10,9 +10,8 @@ import ro.frit.ticketing.event.dto.EventResponse;
 @Component
 public class EventMapper {
 
-    public Event toEntity(String id, CreateEventRequest request) {
+    public Event toEntity(CreateEventRequest request) {
         return Event.builder()
-                .id(id)
                 .name(request.name())
                 .venue(new Venue(request.venueName(), request.city()))
                 .startsAt(request.startsAt())

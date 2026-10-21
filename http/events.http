@@ -13,7 +13,7 @@ GET {{host}}/events/rock-cluj
 ### Unknown event: 404 application/problem+json
 GET {{host}}/events/nope
 
-### Upcoming events in a city, sorted by start
+### Events in a city, any case, sorted by start (the search with one filter)
 GET {{host}}/events?city=cluj
 
 ### The most booked events

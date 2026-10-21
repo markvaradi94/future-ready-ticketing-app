@@ -92,7 +92,7 @@
           }
         },
         {
-          "name": "Upcoming events in a city",
+          "name": "Events in a city, any case",
           "event": [
             {
               "listen": "test",
@@ -224,6 +224,43 @@
               "path": [
                 "events",
                 "{{eventId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search: every filter is optional, and they combine",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events?city=CLUJ&name=rock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "CLUJ"
+                },
+                {
+                  "key": "name",
+                  "value": "rock"
+                }
               ]
             }
           }

@@ -52,27 +52,27 @@ class EventTest {
 
     @Test
     void blankNameIsInvalid() {
-        assertEquals(Set.of("name"), violatedProperties(event.toBuilder().name(" ").build()));
+        assertEquals(Set.of(Event.Fields.name), violatedProperties(event.toBuilder().name(" ").build()));
     }
 
     @Test
     void missingStartIsInvalid() {
-        assertEquals(Set.of("startsAt"), violatedProperties(event.toBuilder().startsAt(null).build()));
+        assertEquals(Set.of(Event.Fields.startsAt), violatedProperties(event.toBuilder().startsAt(null).build()));
     }
 
     @Test
     void zeroCapacityIsInvalid() {
-        assertEquals(Set.of("capacity"), violatedProperties(event.toBuilder().capacity(0).bookedSeats(0).build()));
+        assertEquals(Set.of(Event.Fields.capacity), violatedProperties(event.toBuilder().capacity(0).bookedSeats(0).build()));
     }
 
     @Test
     void negativeBookedSeatsIsInvalid() {
-        assertEquals(Set.of("bookedSeats"), violatedProperties(event.toBuilder().bookedSeats(-1).build()));
+        assertEquals(Set.of(Event.Fields.bookedSeats), violatedProperties(event.toBuilder().bookedSeats(-1).build()));
     }
 
     @Test
     void theVenueIsValidatedToo() {
-        assertEquals(Set.of("venue.city"), violatedProperties(event.toBuilder().venue(new Venue("Arena", "")).build()));
+        assertEquals(Set.of(Event.Fields.venue + "." + Venue.Fields.city), violatedProperties(event.toBuilder().venue(new Venue("Arena", "")).build()));
     }
 
     private Set<String> violatedProperties(Event invalid) {

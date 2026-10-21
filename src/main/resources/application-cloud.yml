@@ -9,3 +9,7 @@ spring:
     username: ${MONGODB_USERNAME}
     password: ${MONGODB_PASSWORD}
     database: ${MONGODB_DATABASE:ticketing}
+
+  docker:
+    compose:
+      enabled: false

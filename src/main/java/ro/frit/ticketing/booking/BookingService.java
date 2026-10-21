@@ -3,7 +3,9 @@ package ro.frit.ticketing.booking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ro.frit.ticketing.booking.dto.BookingResponse;
+import ro.frit.ticketing.booking.dto.BookingSummaryResponse;
 import ro.frit.ticketing.booking.dto.CreateBookingRequest;
+import ro.frit.ticketing.event.EventNotFoundException;
 import ro.frit.ticketing.event.EventService;
 
 import java.time.LocalDateTime;
@@ -39,7 +41,15 @@ public class BookingService {
     }
 
     public Map<String, Integer> bookedSeatsPerEvent() {
-        return bookingRepository.findAll().stream()
-                .collect(Collectors.groupingBy(Booking::getEventId, Collectors.summingInt(Booking::getSeats)));
+        return bookingRepository.sumSeatsPerEvent();
+    }
+
+    public BookingSummaryResponse summaryFor(String eventId) {
+        if (!eventService.existsById(eventId)) {
+            throw new EventNotFoundException(eventId);
+        }
+
+        return bookingRepository.summaryFor(eventId)
+                .orElseGet(() -> BookingSummaryResponse.builder().eventId(eventId).build());
     }
 }

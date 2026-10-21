@@ -435,6 +435,96 @@
               }
             }
           }
+        },
+        {
+          "name": "Booking summary of an event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/rock-cluj/bookings/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "rock-cluj",
+                "bookings",
+                "summary"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Booking summary of the event just created",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/{{eventId}}/bookings/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "{{eventId}}",
+                "bookings",
+                "summary"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Booking summary of an unknown event: 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/nope/bookings/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "nope",
+                "bookings",
+                "summary"
+              ]
+            }
+          }
         }
       ]
     }

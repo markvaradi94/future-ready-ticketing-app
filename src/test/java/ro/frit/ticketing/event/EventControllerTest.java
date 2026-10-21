@@ -7,6 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ro.frit.ticketing.event.dto.CreateEventRequest;
 import ro.frit.ticketing.event.dto.EventResponse;
+import ro.frit.ticketing.event.dto.EventSearchRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,8 +41,8 @@ class EventControllerTest {
     private EventService eventService;
 
     @Test
-    void listsAllEvents() throws Exception {
-        when(eventService.findAll()).thenReturn(List.of(
+    void withoutParametersEveryFilterIsEmpty() throws Exception {
+        when(eventService.search(new EventSearchRequest(null, null, null, null))).thenReturn(List.of(
                 event("e1", "Concert", "Cluj", 100, 70),
                 event("e2", "Play", "Iasi", 50, 50)));
 
@@ -51,6 +52,25 @@ class EventControllerTest {
                 .andExpect(jsonPath("$[0].id").value("e1"))
                 .andExpect(jsonPath("$[0].city").value("Cluj"))
                 .andExpect(jsonPath("$[0].availableSeats").value(70));
+    }
+
+    @Test
+    void searchParametersAreBoundIntoOneFilter() throws Exception {
+        mockMvc.perform(get("/events")
+                        .param(EventSearchRequest.Fields.city, "cluj")
+                        .param(EventSearchRequest.Fields.from, "2030-06-01T00:00:00"))
+                .andExpect(status().isOk());
+
+        verify(eventService).search(new EventSearchRequest("cluj", null, LocalDateTime.of(2030, 6, 1, 0, 0), null));
+    }
+
+    @Test
+    void searchWithAnInvalidDateIsBadRequest() throws Exception {
+        mockMvc.perform(get("/events").param(EventSearchRequest.Fields.from, "tomorrow"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
+
+        verify(eventService, never()).search(any());
     }
 
     @Test
@@ -72,18 +92,6 @@ class EventControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.detail").value("No event with id e9"));
-    }
-
-    @Test
-    void cityListsUpcomingEventsInThatCity() throws Exception {
-        when(eventService.findUpcomingIn("cluj")).thenReturn(List.of(event("e1", "Concert", "Cluj", 100, 100)));
-
-        mockMvc.perform(get("/events").param("city", "cluj"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].city").value("Cluj"));
-
-        verify(eventService, never()).findAll();
     }
 
     @Test

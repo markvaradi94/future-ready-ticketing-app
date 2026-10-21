@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.mongodb)
     implementation(libs.spring.boot.starter.validation)
     compileOnly(libs.lombok)
+    developmentOnly(libs.spring.boot.docker.compose)
     annotationProcessor(libs.lombok)
 
     testImplementation(libs.spring.boot.starter.data.mongodb.test)
@@ -30,6 +31,16 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
+// The demos in ro.frit.ticketing.demo print what happened and assert nothing: the build skips them. Asking for one
+// by name runs it, from IntelliJ or with ./gradlew test --tests '*OverbookingRaceDemo' -i
+val testsAskedForByName = gradle.startParameter.taskRequests.any { request ->
+    request.args.any { it.startsWith("--tests") }
+}
+
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        if (!testsAskedForByName) {
+            excludeTags("demo")
+        }
+    }
 }

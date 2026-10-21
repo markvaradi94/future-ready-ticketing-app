@@ -108,6 +108,35 @@ In class we reached the first lab round. The commit after it adds the other roun
 - the test container is a `static` **field**; a static *method* is ignored without a warning, and the tests then quietly use the compose MongoDB;
 - `application-cloud.yml` reads the Atlas connection from environment variables, so no password is ever in a file.
 
+## Session 4: MongoDB beyond the basics
+
+Queries that method names cannot express, an index, and a race between two bookings.
+
+- **Spring Boot starts compose.** `spring-boot-docker-compose` (development only) runs `compose.yml` when the application starts; the `cloud` profile turns it off.
+- **The search.** `GET /events` takes four optional filters, `city`, `name`, `from` and `to`, bound into one `EventSearchRequest`. `EventSearchRepositoryImpl` builds the query with `MongoTemplate` from the filters that were sent: the city matches as a whole, ignoring case, and the user's text is never a regex. `EventRepository` gets it as a fragment (`EventSearchRepository`).
+- **The aggregation.** `bookedSeatsPerEvent` is summed by MongoDB (`$group`) instead of loading every booking into the application.
+- **The index.** `@Indexed` on `Booking.eventId`; `auto-index-creation` creates it at startup.
+- **The race.** `@Version` on `Event`: a booking that read an out-of-date event fails instead of overbooking it, and `GlobalExceptionHandler` answers 409. `reserveSeats` retries it (`@Retryable`, enabled by `@EnableResilientMethods`).
+- **Field names as constants.** `@FieldNameConstants` on the entities and on `EventSearchRequest`, so a query names `Event.Fields.startsAt`, not the string `"startsAt"`.
+- **Lab:** `GET /events/{eventId}/bookings/summary`, an aggregation with `$match` and `$group`: bookings, seats, and the average seats per booking.
+
+### Added after the session
+
+- `ConcurrentBookingTest`, lab round 2: 20 bookings released at the same moment on a 10-seat event never overbook it. Remove `@Version` from `Event` and it fails; that is the proof it tests something.
+- Tests for the search, in `EventServiceTest` and `EventControllerTest`, and for the 409 in `BookingControllerTest`.
+
+### The demos from class
+
+`src/test/java/ro/frit/ticketing/demo` has the three demos we ran. They print what happened and assert nothing, so `./gradlew build` skips them. Run one from IntelliJ (the green arrow next to the class), or by name:
+
+```
+./gradlew test --tests '*SearchWithQueryDemo' -i     the search three ways: plain @Query, @Query with SpEL, MongoTemplate
+./gradlew test --tests '*MongoWorkDemo' -i           100,000 bookings: summed in Java vs by MongoDB; one event's bookings with and without the index
+./gradlew test --tests '*OverbookingRaceDemo' -i     20 bookings at once, ten times; remove @Version and run it again
+```
+
+Look for the lines that start with `QUERY`, `SEATS`, `FIND` and `RACE`.
+
 ## Running it
 
 You need JDK 25 and Docker.

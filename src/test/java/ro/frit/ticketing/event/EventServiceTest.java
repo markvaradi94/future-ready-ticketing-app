@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Import;
 import ro.frit.ticketing.MongoPersistenceTest;
 import ro.frit.ticketing.event.dto.CreateEventRequest;
 import ro.frit.ticketing.event.dto.EventResponse;
+import ro.frit.ticketing.event.dto.EventSearchRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -75,20 +76,38 @@ class EventServiceTest {
     }
 
     @Test
-    void upcomingEventsInCityIgnoresCaseAndPastEvents() {
-        eventRepository.save(event("e1", "Concert", "Cluj", NOW.plusDays(1), 100, 0));
-        eventRepository.save(event("e2", "Festival", "Cluj", NOW.minusDays(1), 100, 0));
-        eventRepository.save(event("e3", "Play", "Iasi", NOW.plusDays(1), 100, 0));
+    void searchCombinesTheFiltersThatWereSent() {
+        eventRepository.save(event("e1", "Rock Night", "Cluj", NOW.plusDays(10), 100, 0));
+        eventRepository.save(event("e2", "Jazz Evening", "Cluj", NOW.plusDays(20), 100, 0));
+        eventRepository.save(event("e3", "Rock Opera", "Iasi", NOW.plusDays(30), 100, 0));
 
-        assertEquals(List.of("e1"), ids(eventService.findUpcomingIn("cluj")));
+        assertEquals(List.of("e1"), ids(eventService.search(new EventSearchRequest("CLUJ", "rock", null, null))));
     }
 
     @Test
-    void upcomingEventsAreSortedByStart() {
-        eventRepository.save(event("e1", "Concert", "Cluj", NOW.plusDays(3), 100, 0));
-        eventRepository.save(event("e2", "Festival", "Cluj", NOW.plusDays(1), 100, 0));
+    void searchMatchesTheWholeCityAndTakesTheTextLiterally() {
+        eventRepository.save(event("e1", "Rock Night", "Cluj", NOW.plusDays(10), 100, 0));
+        eventRepository.save(event("e2", "Rock Night", "Cluj-Napoca", NOW.plusDays(20), 100, 0));
 
-        assertEquals(List.of("e2", "e1"), ids(eventService.findUpcomingIn("Cluj")));
+        assertEquals(List.of("e1"), ids(eventService.search(new EventSearchRequest("cluj", null, null, null))));
+        assertEquals(List.of(), ids(eventService.search(new EventSearchRequest(".", null, null, null))));
+    }
+
+    @Test
+    void searchDatesIncludeFromAndExcludeTo() {
+        eventRepository.save(event("e1", "Rock Night", "Cluj", NOW.plusDays(10), 100, 0));
+        eventRepository.save(event("e2", "Jazz Evening", "Cluj", NOW.plusDays(20), 100, 0));
+
+        assertEquals(List.of("e1"), ids(eventService.search(
+                new EventSearchRequest(null, null, NOW.plusDays(10), NOW.plusDays(20)))));
+    }
+
+    @Test
+    void searchWithoutFiltersReturnsEveryEventByStart() {
+        eventRepository.save(event("e2", "Jazz Evening", "Cluj", NOW.plusDays(20), 100, 0));
+        eventRepository.save(event("e1", "Rock Night", "Cluj", NOW.plusDays(10), 100, 0));
+
+        assertEquals(List.of("e1", "e2"), ids(eventService.search(new EventSearchRequest(null, null, null, null))));
     }
 
     @Test

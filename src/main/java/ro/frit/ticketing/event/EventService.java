@@ -1,9 +1,12 @@
 package ro.frit.ticketing.event;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import ro.frit.ticketing.event.dto.CreateEventRequest;
 import ro.frit.ticketing.event.dto.EventResponse;
+import ro.frit.ticketing.event.dto.EventSearchRequest;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -15,22 +18,21 @@ public class EventService {
     private final EventMapper eventMapper;
     private final EventRepository eventRepository;
 
-    public List<EventResponse> findAll() {
-        return toResponses(eventRepository.findAll());
+    public List<EventResponse> search(EventSearchRequest searchRequest) {
+        return toResponses(eventRepository.search(searchRequest));
     }
 
     public EventResponse findById(String id) {
         return eventMapper.toResponse(getEvent(id));
     }
 
+    public boolean existsById(String id) {
+        return eventRepository.existsById(id);
+    }
+
     public EventResponse create(CreateEventRequest request) {
         Event event = eventMapper.toEntity(request);
         return eventMapper.toResponse(eventRepository.save(event));
-    }
-
-    public List<EventResponse> findUpcomingIn(String city) {
-        return toResponses(eventRepository.findByVenueCityIgnoreCaseAndStartsAtAfterOrderByStartsAt(
-                city, LocalDateTime.now()));
     }
 
     public List<EventResponse> findTopByBookedSeats(int limit) {
@@ -41,12 +43,14 @@ public class EventService {
                 .toList());
     }
 
+    @Retryable(includes = OptimisticLockingFailureException.class, maxRetries = 3, delay = 500)
     public void reserveSeats(String eventId, int seats) {
         Event event = getEvent(eventId);
 
         if (!event.getStartsAt().isAfter(LocalDateTime.now())) {
             throw new EventAlreadyStartedException(eventId, event.getStartsAt());
         }
+
         if (seats > event.availableSeats()) {
             throw new NotEnoughSeatsException(eventId, event.availableSeats());
         }

@@ -29,3 +29,15 @@ Content-Type: application/json
 
 ### The event just created
 GET {{host}}/events/{{eventId}}
+
+### Search: every filter is optional, and they combine
+GET {{host}}/events?city=CLUJ&name=rock
+
+### Booking summary of an event: bookings, seats and the average seats per booking
+GET {{host}}/events/rock-cluj/bookings/summary
+
+### Booking summary of the event just created: 0 bookings, 0 seats, no average
+GET {{host}}/events/{{eventId}}/bookings/summary
+
+### Booking summary of an unknown event: 404 application/problem+json
+GET {{host}}/events/nope/bookings/summary

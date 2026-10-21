@@ -1,5 +1,6 @@
 package ro.frit.ticketing.shared.error;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,5 +26,10 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(CONFLICT, exception.getMessage());
         exception.properties().forEach(problem::setProperty);
         return problem;
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLockingFailure(OptimisticLockingFailureException exception) {
+        return ProblemDetail.forStatusAndDetail(CONFLICT, "Someone else updated the object while you were editing it.");
     }
 }

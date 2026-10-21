@@ -33,17 +33,17 @@ class BookingTest {
 
     @Test
     void invalidEmailIsInvalid() {
-        assertEquals(Set.of("customerEmail"), violatedProperties(booking.toBuilder().customerEmail("not-an-email").build()));
+        assertEquals(Set.of(Booking.Fields.customerEmail), violatedProperties(booking.toBuilder().customerEmail("not-an-email").build()));
     }
 
     @Test
     void zeroSeatsIsInvalid() {
-        assertEquals(Set.of("seats"), violatedProperties(booking.toBuilder().seats(0).build()));
+        assertEquals(Set.of(Booking.Fields.seats), violatedProperties(booking.toBuilder().seats(0).build()));
     }
 
     @Test
     void missingEventIdIsInvalid() {
-        assertEquals(Set.of("eventId"), violatedProperties(booking.toBuilder().eventId(null).build()));
+        assertEquals(Set.of(Booking.Fields.eventId), violatedProperties(booking.toBuilder().eventId(null).build()));
     }
 
     private Set<String> violatedProperties(Booking invalid) {

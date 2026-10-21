@@ -38,8 +38,8 @@ class EventRepositoryTest {
 
         Document stored = mongoTemplate.findById("e1", Document.class, "events");
 
-        assertEquals("Concert", stored.getString("name"));
-        assertEquals("Cluj", stored.get("venue", Document.class).getString("city"));
+        assertEquals("Concert", stored.getString(Event.Fields.name));
+        assertEquals("Cluj", stored.get(Event.Fields.venue, Document.class).getString(Venue.Fields.city));
     }
 
     @Test

@@ -58,14 +58,6 @@ class EventServiceTest {
     }
 
     @Test
-    void freeSeatsSkipsFullEvents() {
-        eventRepository.save(event("e1", 10, 5));
-        eventRepository.save(event("e2", 10, 10));
-
-        assertEquals(List.of("e1"), ids(eventService.findWithFreeSeats()));
-    }
-
-    @Test
     void topEventsAreSortedByBookedSeats() {
         eventRepository.save(event("e1", "Concert", "Cluj", NOW.plusDays(1), 100, 5));
         eventRepository.save(event("e2", "Festival", "Cluj", NOW.plusDays(1), 100, 8));

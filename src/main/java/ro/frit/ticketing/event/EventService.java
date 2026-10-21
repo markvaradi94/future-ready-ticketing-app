@@ -28,12 +28,6 @@ public class EventService {
         return eventMapper.toResponse(eventRepository.save(event));
     }
 
-    public List<EventResponse> findWithFreeSeats() {
-        return toResponses(eventRepository.findAll().stream()
-                .filter(event -> event.availableSeats() > 0)
-                .toList());
-    }
-
     public List<EventResponse> findUpcomingIn(String city) {
         return toResponses(eventRepository.findByVenueCityIgnoreCaseAndStartsAtAfterOrderByStartsAt(
                 city, LocalDateTime.now()));

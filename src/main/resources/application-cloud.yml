@@ -1,4 +1,4 @@
-# The cloud profile: everything from local, with the database in MongoDB Atlas.
+# The cloud profile: the database in MongoDB Atlas, a dev environment of its own. Nothing is seeded there.
 #   ./gradlew bootRun --args='--spring.profiles.active=cloud'
 # The MONGODB_* variables come from the environment. The password is never written in a file; the host and
 # the user differ for each of you, so they come from outside too.

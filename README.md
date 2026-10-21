@@ -132,3 +132,5 @@ MONGODB_PASSWORD  its password; never write it in a file
 
 ./gradlew bootRun --args='--spring.profiles.active=cloud'
 ```
+
+The port is the same, 8085. Nothing is seeded in Atlas: create an event with the requests first.

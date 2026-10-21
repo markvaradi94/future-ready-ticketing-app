@@ -3,12 +3,9 @@ spring:
     name: ticketing
   mongodb:
     database: ticketing
-  profiles:
-    group:
-      cloud: local
   mvc:
     problemdetails:
       enabled: true
 
 server:
-  port: 8090
+  port: 8085

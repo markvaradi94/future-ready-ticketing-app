@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.data.mongodb)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.springdoc.openapi.starter.webmvc.ui)
     compileOnly(libs.lombok)
     developmentOnly(libs.spring.boot.docker.compose)
     annotationProcessor(libs.lombok)

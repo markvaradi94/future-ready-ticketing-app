@@ -15,6 +15,53 @@ Content-Type: application/json
 ### The booking just made
 GET {{host}}/events/rock-cluj/bookings/{{bookingId}}
 
+### The event's bookings, oldest first
+GET {{host}}/events/rock-cluj/bookings
+
+### An event with bookings cannot get fewer seats than it sold: 409 with bookedSeats
+PUT {{host}}/events/rock-cluj
+Content-Type: application/json
+
+{"name": "Rock Night", "venueName": "BT Arena", "city": "Cluj", "startsAt": "2030-06-12T20:00:00", "capacity": 1}
+
+### Cancel the booking just made: 204, and its seats go back to the event
+DELETE {{host}}/events/rock-cluj/bookings/{{bookingId}}
+
+### Cancelled: 404
+GET {{host}}/events/rock-cluj/bookings/{{bookingId}}
+
+### Call off an event that has bookings: create it, book it twice, delete it. The id is kept.
+POST {{host}}/events
+Content-Type: application/json
+
+{"name": "Jazz Picnic", "venueName": "Parcul Central", "city": "Cluj", "startsAt": "2030-07-01T18:00:00", "capacity": 100}
+
+> {% client.global.set("calledOffId", response.body.id); %}
+
+### Ana books it
+POST {{host}}/events/{{calledOffId}}/bookings
+Content-Type: application/json
+
+{"customerEmail": "ana@mail.ro", "seats": 2}
+
+### Ion books it
+POST {{host}}/events/{{calledOffId}}/bookings
+Content-Type: application/json
+
+{"customerEmail": "ion@mail.ro", "seats": 1}
+
+### Move it to another date first: 200, and two "Booked event changed" lines in the log
+PUT {{host}}/events/{{calledOffId}}
+Content-Type: application/json
+
+{"name": "Jazz Picnic", "venueName": "Parcul Central", "city": "Cluj", "startsAt": "2030-07-08T18:00:00", "capacity": 100}
+
+### Call it off: 204, and two "Booking cancelled … EVENT_CANCELLED" lines in the log
+DELETE {{host}}/events/{{calledOffId}}
+
+### Gone, with its bookings: 404
+GET {{host}}/events/{{calledOffId}}/bookings
+
 ### Not enough seats: 409 with availableSeats
 POST {{host}}/events/jazz-cluj/bookings
 Content-Type: application/json

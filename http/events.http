@@ -41,3 +41,15 @@ GET {{host}}/events/{{eventId}}/bookings/summary
 
 ### Booking summary of an unknown event: 404 application/problem+json
 GET {{host}}/events/nope/bookings/summary
+
+### Change the event just created: 200 with the new capacity. PUT sends every field.
+PUT {{host}}/events/{{eventId}}
+Content-Type: application/json
+
+{"name": "Folk Evening", "venueName": "Sala Polivalenta", "city": "Cluj", "startsAt": "2030-10-01T19:00:00", "capacity": 400}
+
+### Call it off: 204
+DELETE {{host}}/events/{{eventId}}
+
+### Gone: 404
+GET {{host}}/events/{{eventId}}

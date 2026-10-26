@@ -3,11 +3,13 @@ package ro.frit.ticketing.event;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ro.frit.ticketing.event.dto.CreateEventRequest;
 import ro.frit.ticketing.event.dto.EventResponse;
 import ro.frit.ticketing.event.dto.EventSearchRequest;
+import ro.frit.ticketing.event.dto.UpdateEventRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,13 +17,10 @@ import java.util.List;
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -156,6 +155,56 @@ class EventControllerTest {
                 .andExpect(status().isBadRequest());
 
         verify(eventService, never()).create(any());
+    }
+
+    @Test
+    void updateAnswersWithTheUpdatedEvent() throws Exception {
+        UpdateEventRequest request = new UpdateEventRequest("Rock Night", "BT Arena", "Cluj", STARTS_AT, 600);
+        when(eventService.update("e7", request)).thenReturn(event("e7", "Rock Night", "Cluj", 600, 590));
+
+        mockMvc.perform(put("/events/e7").contentType(APPLICATION_JSON).content("""
+                        {"name":"Rock Night","venueName":"BT Arena","city":"Cluj",
+                         "startsAt":"2030-06-12T20:00:00","capacity":600}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.capacity").value(600))
+                .andExpect(jsonPath("$.availableSeats").value(590));
+    }
+
+    @Test
+    void capacityBelowTheSoldSeatsIsConflict() throws Exception {
+        when(eventService.update(any(), any())).thenThrow(new CapacityBelowSoldSeatsException("e7", 30));
+
+        mockMvc.perform(put("/events/e7").contentType(APPLICATION_JSON).content("""
+                        {"name":"Rock Night","venueName":"BT Arena","city":"Cluj",
+                         "startsAt":"2030-06-12T20:00:00","capacity":20}"""))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.bookedSeats").value(30));
+    }
+
+    @Test
+    void updateWithoutNameIsBadRequest() throws Exception {
+        mockMvc.perform(put("/events/e7").contentType(APPLICATION_JSON).content("""
+                        {"venueName":"BT Arena","city":"Cluj","startsAt":"2030-06-12T20:00:00","capacity":500}"""))
+                .andExpect(status().isBadRequest());
+
+        verify(eventService, never()).update(any(), any());
+    }
+
+    @Test
+    void deleteAnswersNoContent() throws Exception {
+        mockMvc.perform(delete("/events/e7"))
+                .andExpect(status().isNoContent());
+
+        verify(eventService).delete("e7");
+    }
+
+    @Test
+    void deleteOfAStaleCopyIsConflict() throws Exception {
+        doThrow(new OptimisticLockingFailureException("stale")).when(eventService).delete("e7");
+
+        mockMvc.perform(delete("/events/e7"))
+                .andExpect(status().isConflict());
     }
 
     private static EventResponse event(String id, String name, String city, int capacity, int availableSeats) {

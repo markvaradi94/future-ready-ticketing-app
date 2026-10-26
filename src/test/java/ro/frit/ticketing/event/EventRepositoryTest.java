@@ -5,6 +5,7 @@ import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ro.frit.ticketing.MongoPersistenceTest;
 
@@ -47,6 +48,16 @@ class EventRepositoryTest {
         assertThrows(ConstraintViolationException.class, () -> eventRepository.save(event("e1", " ")));
 
         assertTrue(eventRepository.findById("e1").isEmpty());
+    }
+
+    @Test
+    void deletingAStaleCopyIsRefused() {
+        Event stale = eventRepository.save(event("e1", "Concert"));
+        eventRepository.save(stale.toBuilder().name("Renamed").build());
+
+        assertThrows(OptimisticLockingFailureException.class, () -> eventRepository.delete(stale));
+
+        assertTrue(eventRepository.existsById("e1"));
     }
 
     private static Event event(String id, String name) {

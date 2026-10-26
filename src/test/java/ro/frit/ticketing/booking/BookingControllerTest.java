@@ -14,17 +14,21 @@ import ro.frit.ticketing.event.EventNotFoundException;
 import ro.frit.ticketing.event.NotEnoughSeatsException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 import static org.springframework.http.MediaType.TEXT_PLAIN;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -55,6 +59,7 @@ class BookingControllerTest {
 
         mockMvc.perform(post("/events/e1/bookings").contentType(APPLICATION_JSON).content(VALID_BODY))
                 .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "http://localhost/events/e1/bookings/b1"))
                 .andExpect(jsonPath("$.id").value("b1"))
                 .andExpect(jsonPath("$.eventId").value("e1"))
                 .andExpect(jsonPath("$.customerEmail").value("ana@mail.ro"))
@@ -250,5 +255,31 @@ class BookingControllerTest {
         mockMvc.perform(get("/events/e9/bookings/summary"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON));
+    }
+
+    @Test
+    void listsTheEventsBookings() throws Exception {
+        when(bookingService.findAllFor("e1")).thenReturn(List.of(BOOKING));
+
+        mockMvc.perform(get("/events/e1/bookings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value("b1"));
+    }
+
+    @Test
+    void cancelAnswersNoContent() throws Exception {
+        mockMvc.perform(delete("/events/e1/bookings/b1"))
+                .andExpect(status().isNoContent());
+
+        verify(bookingService).cancel("e1", "b1");
+    }
+
+    @Test
+    void cancelOfAnUnknownBookingIsNotFound() throws Exception {
+        doThrow(new BookingNotFoundException("e1", "b9")).when(bookingService).cancel("e1", "b9");
+
+        mockMvc.perform(delete("/events/e1/bookings/b9"))
+                .andExpect(status().isNotFound());
     }
 }

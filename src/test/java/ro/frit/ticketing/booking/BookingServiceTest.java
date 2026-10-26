@@ -11,12 +11,13 @@ import ro.frit.ticketing.booking.dto.CreateBookingRequest;
 import ro.frit.ticketing.event.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @MongoPersistenceTest
-@Import({BookingMapper.class, BookingService.class, EventService.class, EventMapper.class})
+@Import({BookingMapper.class, BookingService.class, LoggingBookingEventPublisher.class, EventService.class, EventMapper.class})
 class BookingServiceTest {
     private static final LocalDateTime NOW = LocalDateTime.now();
 
@@ -28,6 +29,9 @@ class BookingServiceTest {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
@@ -127,6 +131,69 @@ class BookingServiceTest {
     @Test
     void unknownEventHasNoSummary() {
         assertThrows(EventNotFoundException.class, () -> bookingService.summaryFor("e9"));
+    }
+
+    @Test
+    void listsTheEventsBookingsInTheOrderTheyWereMade() {
+        eventRepository.save(event("e1", 100, 0));
+        eventRepository.save(event("e2", 100, 0));
+        BookingResponse first = bookingService.book("e1", new CreateBookingRequest("ana@mail.ro", 2));
+        bookingService.book("e2", new CreateBookingRequest("ion@mail.ro", 1));
+        BookingResponse second = bookingService.book("e1", new CreateBookingRequest("ion@mail.ro", 3));
+
+        assertEquals(List.of(first, second), bookingService.findAllFor("e1"));
+    }
+
+    @Test
+    void unknownEventHasNoBookingList() {
+        assertThrows(EventNotFoundException.class, () -> bookingService.findAllFor("e9"));
+    }
+
+    @Test
+    void cancelGivesTheSeatsBackAndRemovesTheBooking() {
+        eventRepository.save(event("e1", 100, 10));
+        BookingResponse booking = bookingService.book("e1", new CreateBookingRequest("ana@mail.ro", 2));
+
+        bookingService.cancel("e1", booking.id());
+
+        assertEquals(10, eventRepository.findById("e1").orElseThrow().getBookedSeats());
+        assertFalse(bookingRepository.existsById(booking.id()));
+    }
+
+    @Test
+    void bookingCannotBeCancelledThroughAnotherEvent() {
+        eventRepository.save(event("e1", 100, 0));
+        eventRepository.save(event("e2", 100, 0));
+        BookingResponse booking = bookingService.book("e1", new CreateBookingRequest("ana@mail.ro", 2));
+
+        assertThrows(BookingNotFoundException.class, () -> bookingService.cancel("e2", booking.id()));
+
+        assertEquals(2, eventRepository.findById("e1").orElseThrow().getBookedSeats());
+        assertTrue(bookingRepository.existsById(booking.id()));
+    }
+
+    @Test
+    void bookingCannotBeCancelledAfterTheEventStarted() {
+        eventRepository.save(event("e1", 100, 2).toBuilder().startsAt(NOW.minusHours(1)).build());
+        Booking booking = bookingRepository.save(Booking.builder()
+                .eventId("e1").customerEmail("ana@mail.ro").seats(2).bookedAt(NOW.minusDays(1)).build());
+
+        assertThrows(EventAlreadyStartedException.class, () -> bookingService.cancel("e1", booking.getId()));
+
+        assertTrue(bookingRepository.existsById(booking.getId()));
+    }
+
+    @Test
+    void cancelledEventTakesItsBookingsWithIt() {
+        eventRepository.save(event("e1", 100, 0));
+        eventRepository.save(event("e2", 100, 0));
+        bookingService.book("e1", new CreateBookingRequest("ana@mail.ro", 2));
+        bookingService.book("e1", new CreateBookingRequest("ion@mail.ro", 1));
+        BookingResponse other = bookingService.book("e2", new CreateBookingRequest("ana@mail.ro", 3));
+
+        eventService.delete("e1");
+
+        assertEquals(List.of(other.id()), bookingRepository.findAll().stream().map(Booking::getId).toList());
     }
 
     private static Event event(String id, int capacity, int bookedSeats) {

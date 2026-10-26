@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * proof it tests something.
  */
 @MongoPersistenceTest
-@Import({BookingService.class, BookingMapper.class, EventService.class, EventMapper.class})
+@Import({BookingService.class, BookingMapper.class, EventService.class, EventMapper.class, LoggingBookingEventPublisher.class})
 class ConcurrentBookingTest {
 
     private static final int CAPACITY = 10;

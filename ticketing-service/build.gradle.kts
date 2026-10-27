@@ -12,6 +12,10 @@ java {
     }
 }
 
+tasks.bootRun {
+    workingDir = rootProject.projectDir
+}
+
 repositories {
     mavenCentral()
 }

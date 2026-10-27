@@ -5,8 +5,8 @@ spring:
     database: ticketing
   docker:
     compose:
-      # compose.yml is in the repository's root, one level above this service.
-      file: ../compose.yml
+      # No file: Boot looks for compose.yml in the working directory, the repository's root, whether the service
+      # runs from IntelliJ or with ./gradlew bootRun (see build.gradle.kts).
       # Both services use the same containers: start them if they are not running, and leave them running on exit.
       lifecycle-management: start-only
   mvc:

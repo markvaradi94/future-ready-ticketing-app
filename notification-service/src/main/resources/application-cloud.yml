@@ -8,9 +8,16 @@ spring:
     password: ${MONGODB_PASSWORD}
     database: notifications
   rabbitmq:
-    # The whole CloudAMQP URL from the console, amqps://user:password@host/vhost: amqps means TLS on 5671.
-    # It holds the password, so it comes from the environment, never from this file.
-    addresses: ${CLOUDAMQP_URL}
+    # CloudAMQP in pieces, from the console's AMQP details, like Atlas: TLS on port 5671. On the shared plans the
+    # virtual host is the username; CLOUDAMQP_VHOST overrides it.
+    host: ${CLOUDAMQP_HOST}
+    port: 5671
+    username: ${CLOUDAMQP_USERNAME}
+    password: ${CLOUDAMQP_PASSWORD}
+    virtual-host: ${CLOUDAMQP_VHOST:${CLOUDAMQP_USERNAME}}
+    ssl:
+      enabled: true
   docker:
     compose:
+      # Atlas and CloudAMQP replace the local containers.
       enabled: false

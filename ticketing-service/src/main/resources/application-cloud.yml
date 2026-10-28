@@ -1,6 +1,6 @@
 # The cloud profile: the database in MongoDB Atlas, a dev environment of its own. Nothing is seeded there.
 #   ./gradlew bootRun --args='--spring.profiles.active=cloud'
-# The MONGODB_* variables come from the environment. The password is never written in a file; the host and
+# The MONGODB_* variables and CLOUDAMQP_URL come from the environment. The password is never written in a file; the host and
 # the user differ for each of you, so they come from outside too.
 spring:
   mongodb:
@@ -10,6 +10,10 @@ spring:
     password: ${MONGODB_PASSWORD}
     database: ${MONGODB_DATABASE:ticketing}
 
+  rabbitmq:
+    # The whole CloudAMQP URL from the console, amqps://user:password@host/vhost: amqps means TLS on 5671.
+    # It holds the password, so it comes from the environment, never from this file.
+    addresses: ${CLOUDAMQP_URL}
   docker:
     compose:
       enabled: false

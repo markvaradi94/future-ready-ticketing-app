@@ -69,7 +69,7 @@ public class EventService {
     }
 
     @Retryable(includes = OptimisticLockingFailureException.class, maxRetries = 3, delay = 500)
-    public void reserveSeats(String eventId, int seats) {
+    public EventResponse reserveSeats(String eventId, int seats) {
         Event event = getEvent(eventId);
 
         if (!event.getStartsAt().isAfter(LocalDateTime.now())) {
@@ -80,9 +80,9 @@ public class EventService {
             throw new NotEnoughSeatsException(eventId, event.availableSeats());
         }
 
-        eventRepository.save(event.toBuilder()
+        return eventMapper.toResponse(eventRepository.save(event.toBuilder()
                 .bookedSeats(event.getBookedSeats() + seats)
-                .build());
+                .build()));
     }
 
     @Retryable(includes = OptimisticLockingFailureException.class, maxRetries = 3, delay = 500)

@@ -1,0 +1,16 @@
+# The cloud profile: MongoDB Atlas and CloudAMQP, from the same environment variables as ticketing.
+#   ./gradlew :notification-service:bootRun --args='--spring.profiles.active=cloud'
+spring:
+  mongodb:
+    protocol: mongodb+srv
+    host: ${MONGODB_HOST}
+    username: ${MONGODB_USERNAME}
+    password: ${MONGODB_PASSWORD}
+    database: notifications
+  rabbitmq:
+    # The whole CloudAMQP URL from the console, amqps://user:password@host/vhost: amqps means TLS on 5671.
+    # It holds the password, so it comes from the environment, never from this file.
+    addresses: ${CLOUDAMQP_URL}
+  docker:
+    compose:
+      enabled: false

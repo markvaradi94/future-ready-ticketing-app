@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Ticketing App",
-    "description": "The course project's HTTP API, the same requests as http/*.http. Start the app first: ./gradlew bootRun --args='--spring.profiles.active=local'. Each request checks its status code (Test Results); creating an event or a booking keeps its id for the next request.",
+    "description": "The course project's HTTP API, the same requests as http/*.http. Start the app first: ./gradlew :notification-service:bootRun, then ./gradlew :ticketing-service:bootRun --args='--spring.profiles.active=local'. Each request checks its status code (Test Results); creating an event or a booking keeps its id for the next request.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -1030,12 +1030,48 @@
           }
         }
       ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "All notifications, newest first",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{notificationsUrl}}/notifications",
+              "host": [
+                "{{notificationsUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8085"
+    },
+    {
+      "key": "notificationsUrl",
+      "value": "http://localhost:8086"
     },
     {
       "key": "eventId",

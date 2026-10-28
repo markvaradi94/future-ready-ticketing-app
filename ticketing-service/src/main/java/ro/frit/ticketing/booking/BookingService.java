@@ -10,6 +10,7 @@ import ro.frit.ticketing.event.EventCancelled;
 import ro.frit.ticketing.event.EventChanged;
 import ro.frit.ticketing.event.EventNotFoundException;
 import ro.frit.ticketing.event.EventService;
+import ro.frit.ticketing.event.dto.EventResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,12 +33,12 @@ public class BookingService {
     private final BookingEventPublisher bookingEventPublisher;
 
     public BookingResponse book(String eventId, CreateBookingRequest request) {
-        eventService.reserveSeats(eventId, request.seats());
+        EventResponse event = eventService.reserveSeats(eventId, request.seats());
 
         Booking booking = bookingMapper.toEntity(eventId, request, LocalDateTime.now().truncatedTo(MILLIS));
         Booking savedBooking = bookingRepository.save(booking);
 
-        bookingEventPublisher.publish(BookingConfirmed.of(savedBooking));
+        bookingEventPublisher.publish(BookingConfirmed.of(savedBooking, event));
         return bookingMapper.toResponse(savedBooking);
     }
 

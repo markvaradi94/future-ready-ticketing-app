@@ -23,6 +23,7 @@ repositories {
 dependencies {
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.data.mongodb)
+    implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     compileOnly(libs.lombok)
@@ -30,8 +31,11 @@ dependencies {
     annotationProcessor(libs.lombok)
 
     testImplementation(libs.spring.boot.starter.data.mongodb.test)
+    testImplementation(libs.spring.boot.starter.amqp.test)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.testcontainers.mongodb)
+    testImplementation(libs.testcontainers.rabbitmq)
+    testImplementation(libs.archunit.junit5)
     testImplementation(libs.spring.boot.starter.webmvc.test)
     testRuntimeOnly(libs.junit.platform.launcher)
 }

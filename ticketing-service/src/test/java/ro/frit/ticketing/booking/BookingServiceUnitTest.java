@@ -12,6 +12,7 @@ import ro.frit.ticketing.event.EventCancelled;
 import ro.frit.ticketing.event.EventChanged;
 import ro.frit.ticketing.event.EventService;
 import ro.frit.ticketing.event.NotEnoughSeatsException;
+import ro.frit.ticketing.event.dto.EventResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,8 +48,12 @@ class BookingServiceUnitTest {
     @InjectMocks
     private BookingService bookingService;
 
+    private static final LocalDateTime STARTS_AT = LocalDateTime.of(2030, 6, 12, 20, 0);
+
     @Test
     void confirmedBookingIsAnnouncedOnceWithWhatWasStored() {
+        when(eventService.reserveSeats("e1", 2))
+                .thenReturn(new EventResponse("e1", "Rock Night", "Arena", "Cluj", STARTS_AT, 100, 98));
         // The repository gives the booking its id, as MongoDB would.
         when(bookingRepository.save(any())).thenAnswer(call -> call.<Booking>getArgument(0).toBuilder().id("b1").build());
         ArgumentCaptor<BookingConfirmed> published = ArgumentCaptor.forClass(BookingConfirmed.class);
@@ -58,6 +63,8 @@ class BookingServiceUnitTest {
         verify(bookingEventPublisher).publish(published.capture());
         assertEquals("b1", published.getValue().bookingId());
         assertEquals("e1", published.getValue().eventId());
+        assertEquals("Rock Night", published.getValue().eventName());
+        assertEquals(STARTS_AT, published.getValue().eventStartsAt());
         assertEquals("ana@mail.ro", published.getValue().customerEmail());
         assertEquals(2, published.getValue().seats());
     }

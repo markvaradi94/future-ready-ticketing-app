@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ro.frit.ticketing.MongoPersistenceTest;
 import ro.frit.ticketing.booking.dto.BookingResponse;
 import ro.frit.ticketing.booking.dto.BookingSummaryResponse;
@@ -17,7 +18,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @MongoPersistenceTest
-@Import({BookingMapper.class, BookingService.class, LoggingBookingEventPublisher.class, EventService.class, EventMapper.class})
+@Import({BookingMapper.class, BookingService.class, EventService.class, EventMapper.class})
 class BookingServiceTest {
     private static final LocalDateTime NOW = LocalDateTime.now();
 
@@ -32,6 +33,9 @@ class BookingServiceTest {
 
     @Autowired
     private EventService eventService;
+
+    @MockitoBean
+    private BookingEventPublisher bookingEventPublisher;
 
     @BeforeEach
     void setUp() {

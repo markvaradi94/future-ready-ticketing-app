@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ro.frit.ticketing.MongoPersistenceTest;
 import ro.frit.ticketing.booking.dto.BookingResponse;
 import ro.frit.ticketing.booking.dto.CreateBookingRequest;
@@ -32,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * proof it tests something.
  */
 @MongoPersistenceTest
-@Import({BookingService.class, BookingMapper.class, EventService.class, EventMapper.class, LoggingBookingEventPublisher.class})
+@Import({BookingService.class, BookingMapper.class, EventService.class, EventMapper.class})
 class ConcurrentBookingTest {
 
     private static final int CAPACITY = 10;
@@ -46,6 +47,9 @@ class ConcurrentBookingTest {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @MockitoBean
+    private BookingEventPublisher bookingEventPublisher;
 
     @BeforeEach
     void startWithOneEvent() {

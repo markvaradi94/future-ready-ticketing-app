@@ -2,14 +2,17 @@ spring:
   application:
     name: notification
   mongodb:
-    # Its own database on the same MongoDB: notification-service never reads ticketing's collections.
     database: notifications
   docker:
     compose:
-      # No file: Boot looks for compose.yml in the working directory, the repository's root, whether the service
-      # runs from IntelliJ or with ./gradlew bootRun (see build.gradle.kts).
-      # Both services use the same containers: start them if they are not running, and leave them running on exit.
       lifecycle-management: start-only
+  data:
+    mongodb:
+      auto-index-creation: true
+  rabbitmq:
+    listener:
+      simple:
+        default-requeue-rejected: false
   mvc:
     problemdetails:
       enabled: true

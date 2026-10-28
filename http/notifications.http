@@ -1,0 +1,7 @@
+### Start notification-service first: ./gradlew :notification-service:bootRun
+### Postman users: import postman/ticketing-app.postman_collection.json instead.
+
+@host = http://localhost:8086
+
+### All notifications, newest first
+GET {{host}}/notifications

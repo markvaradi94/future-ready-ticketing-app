@@ -49,6 +49,20 @@ public class NotificationService {
         insertOnce(notification);
     }
 
+    // Added after the session (stretch 3).
+    public void store(String messageId, BookedEventChanged event) {
+        Notification notification = Notification.builder()
+                .messageId(messageId)
+                .bookingId(event.bookingId())
+                .customerEmail(event.customerEmail())
+                .text(text(event))
+                .notifiedAt(LocalDateTime.now().truncatedTo(MILLIS))
+                .sent(false)
+                .build();
+
+        insertOnce(notification);
+    }
+
     public List<Notification> findAll() {
         return notificationRepository.findAll(Sort.by(DESC, notifiedAt));
     }
@@ -63,6 +77,11 @@ public class NotificationService {
             case BY_CUSTOMER -> "%d seat(s) for event %s are cancelled, as you asked.".formatted(event.seats(), event.eventId());
             case EVENT_CANCELLED -> "%d seat(s) for event %s are cancelled: the event was called off.".formatted(event.seats(), event.eventId());
         };
+    }
+
+    private static String text(BookedEventChanged event) {
+        return "Your event changed: %d seat(s) for %s, now at %s, %s, on %s.".formatted(
+                event.seats(), event.eventName(), event.venueName(), event.city(), STARTS_AT.format(event.eventStartsAt()));
     }
 
     // The unique index on messageId refuses a message delivered again. Spring translates MongoDB's E11000 into its

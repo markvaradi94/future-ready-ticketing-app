@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import static org.springframework.amqp.support.AmqpHeaders.MESSAGE_ID;
+import static ro.frit.notification.config.MessagingConfig.BOOKED_EVENT_CHANGED_QUEUE;
 import static ro.frit.notification.config.MessagingConfig.BOOKING_CANCELLED_QUEUE;
 import static ro.frit.notification.config.MessagingConfig.BOOKING_CONFIRMED_QUEUE;
 
@@ -28,6 +29,16 @@ public class BookingEventsListener {
     public void onBookingCancelled(BookingCancelled event, @Header(MESSAGE_ID) String messageId) {
         if (!event.isValid()) {
             throw new AmqpRejectAndDontRequeueException("Invalid booking cancelled event: %s".formatted(event.bookingId()));
+        }
+
+        notificationService.store(messageId, event);
+    }
+
+    // Added after the session (stretch 3).
+    @RabbitListener(queues = BOOKED_EVENT_CHANGED_QUEUE)
+    public void onBookedEventChanged(BookedEventChanged event, @Header(MESSAGE_ID) String messageId) {
+        if (!event.isValid()) {
+            throw new AmqpRejectAndDontRequeueException("Invalid booked event changed event: %s".formatted(event.bookingId()));
         }
 
         notificationService.store(messageId, event);

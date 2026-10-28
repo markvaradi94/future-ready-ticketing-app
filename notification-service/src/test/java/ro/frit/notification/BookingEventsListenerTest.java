@@ -19,6 +19,8 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static ro.frit.notification.config.MessagingConfig.BOOKED_EVENT_CHANGED;
+import static ro.frit.notification.config.MessagingConfig.BOOKED_EVENT_CHANGED_DEAD_LETTER_QUEUE;
 import static ro.frit.notification.config.MessagingConfig.BOOKING_CANCELLED;
 import static ro.frit.notification.config.MessagingConfig.BOOKING_CANCELLED_DEAD_LETTER_QUEUE;
 import static ro.frit.notification.config.MessagingConfig.BOOKING_CONFIRMED;
@@ -36,6 +38,7 @@ class BookingEventsListenerTest {
     private static final Duration WAIT = Duration.ofSeconds(10);
     private static final String CONFIRMED_TYPE = "ro.frit.ticketing.booking.BookingConfirmed";
     private static final String CANCELLED_TYPE = "ro.frit.ticketing.booking.BookingCancelled";
+    private static final String CHANGED_TYPE = "ro.frit.ticketing.booking.BookedEventChanged";
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -50,6 +53,7 @@ class BookingEventsListenerTest {
     void startEmpty() {
         amqpAdmin.purgeQueue(BOOKING_CONFIRMED_DEAD_LETTER_QUEUE, false);
         amqpAdmin.purgeQueue(BOOKING_CANCELLED_DEAD_LETTER_QUEUE, false);
+        amqpAdmin.purgeQueue(BOOKED_EVENT_CHANGED_DEAD_LETTER_QUEUE, false);
         notificationRepository.deleteAll();
     }
 
@@ -72,6 +76,26 @@ class BookingEventsListenerTest {
         Notification notification = notificationRepository.findByMessageId("m-1").orElseThrow();
         assertEquals("b-1", notification.getBookingId());
         assertEquals("2 seat(s) for event rock-cluj are cancelled: the event was called off.", notification.getText());
+    }
+
+    @Test
+    void changedEventStoresOneNotificationWithReadableText() {
+        publish(BOOKED_EVENT_CHANGED, CHANGED_TYPE, "m-1", bookedEventChanged("b-1", 2));
+
+        await().atMost(WAIT).until(() -> notificationRepository.findByMessageId("m-1").isPresent());
+        Notification notification = notificationRepository.findByMessageId("m-1").orElseThrow();
+        assertEquals("b-1", notification.getBookingId());
+        assertEquals("Your event changed: 2 seat(s) for Rock Night, now at Sala Polivalenta, Cluj, on 13 Jun 2030 at 21:00.",
+                notification.getText());
+    }
+
+    @Test
+    void invalidChangeLandsInItsOwnDeadLetterQueue() {
+        publish(BOOKED_EVENT_CHANGED, CHANGED_TYPE, "m-1", bookedEventChanged("b-1", 0));
+
+        assertNotNull(rabbitTemplate.receive(BOOKED_EVENT_CHANGED_DEAD_LETTER_QUEUE, WAIT.toMillis()),
+                "nothing in the dead-letter queue");
+        assertEquals(0, notificationRepository.count());
     }
 
     @Test
@@ -118,6 +142,13 @@ class BookingEventsListenerTest {
         return """
                 {"bookingId":"%s","eventId":"rock-cluj","eventName":"Rock Night","eventStartsAt":"2030-06-12T20:00:00",
                  "customerEmail":"ana@mail.ro","seats":%d,"bookedAt":"2026-10-28T18:30:00.123"}
+                """.formatted(bookingId, seats);
+    }
+
+    private static String bookedEventChanged(String bookingId, int seats) {
+        return """
+                {"bookingId":"%s","eventId":"rock-cluj","customerEmail":"ana@mail.ro","seats":%d,"eventName":"Rock Night",
+                 "venueName":"Sala Polivalenta","city":"Cluj","eventStartsAt":"2030-06-13T21:00:00"}
                 """.formatted(bookingId, seats);
     }
 

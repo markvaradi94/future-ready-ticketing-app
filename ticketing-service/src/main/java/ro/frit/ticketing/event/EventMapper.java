@@ -5,6 +5,8 @@ import ro.frit.ticketing.event.dto.CreateEventRequest;
 import ro.frit.ticketing.event.dto.EventResponse;
 import ro.frit.ticketing.event.dto.UpdateEventRequest;
 
+import java.util.UUID;
+
 /**
  * Translates between the {@link Event} entity and the event DTOs, so neither side knows the other's shape.
  */
@@ -13,6 +15,8 @@ public class EventMapper {
 
     public Event toEntity(CreateEventRequest request) {
         return Event.builder()
+                // The id is ours, made before the save: it can go into a message, a log line or a URL first.
+                .id(UUID.randomUUID().toString())
                 .name(request.name())
                 .venue(new Venue(request.venueName(), request.city()))
                 .startsAt(request.startsAt())

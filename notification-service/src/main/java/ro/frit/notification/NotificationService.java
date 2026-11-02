@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.Locale.ENGLISH;
@@ -25,6 +26,7 @@ public class NotificationService {
 
     public void store(String messageId, BookingConfirmed event) {
         Notification notification = Notification.builder()
+                .id(UUID.randomUUID().toString())
                 .messageId(messageId)
                 .bookingId(event.bookingId())
                 .customerEmail(event.customerEmail())
@@ -38,6 +40,7 @@ public class NotificationService {
 
     public void store(String messageId, BookingCancelled event) {
         Notification notification = Notification.builder()
+                .id(UUID.randomUUID().toString())
                 .messageId(messageId)
                 .bookingId(event.bookingId())
                 .customerEmail(event.customerEmail())
@@ -52,6 +55,7 @@ public class NotificationService {
     // Added after the session (stretch 3).
     public void store(String messageId, BookedEventChanged event) {
         Notification notification = Notification.builder()
+                .id(UUID.randomUUID().toString())
                 .messageId(messageId)
                 .bookingId(event.bookingId())
                 .customerEmail(event.customerEmail())

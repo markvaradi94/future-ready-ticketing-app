@@ -5,6 +5,7 @@ import ro.frit.ticketing.booking.dto.BookingResponse;
 import ro.frit.ticketing.booking.dto.CreateBookingRequest;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Translates between the {@link Booking} entity and the booking DTOs, so neither side knows the other's shape.
@@ -14,6 +15,7 @@ public class BookingMapper {
 
     public Booking toEntity(String eventId, CreateBookingRequest request, LocalDateTime bookedAt) {
         return Booking.builder()
+                .id(UUID.randomUUID().toString())
                 .eventId(eventId)
                 .customerEmail(request.customerEmail())
                 .seats(request.seats())

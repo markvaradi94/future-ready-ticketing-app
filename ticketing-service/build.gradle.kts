@@ -22,6 +22,7 @@ repositories {
 
 dependencies {
     implementation(libs.spring.boot.starter.webmvc)
+    implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.data.mongodb)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.boot.starter.validation)

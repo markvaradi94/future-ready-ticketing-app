@@ -1,5 +1,7 @@
 [versions]
 archunit = "1.5.1"
+spring-cloud = "2025.1.4"
+bucket4j = "8.15.0"
 spring-boot = "4.1.1"
 springdoc = "3.1.1"
 spring-dependency-management = "1.1.7"
@@ -14,12 +16,18 @@ spring-boot-docker-compose = { module = "org.springframework.boot:spring-boot-do
 spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
 spring-boot-starter-data-mongodb-test = { module = "org.springframework.boot:spring-boot-starter-data-mongodb-test" }
 spring-boot-starter-amqp-test = { module = "org.springframework.boot:spring-boot-starter-amqp-test" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 testcontainers-mongodb = { module = "org.testcontainers:testcontainers-mongodb" }
 testcontainers-rabbitmq = { module = "org.testcontainers:testcontainers-rabbitmq" }
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 lombok = { module = "org.projectlombok:lombok" }
+spring-cloud-starter-gateway-server-webmvc = { module = "org.springframework.cloud:spring-cloud-starter-gateway-server-webmvc" }
+bucket4j-core = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
+bucket4j-caffeine = { module = "com.bucket4j:bucket4j_jdk17-caffeine", version.ref = "bucket4j" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 awaitility = { module = "org.awaitility:awaitility" }
 
 [plugins]

@@ -1,7 +1,9 @@
 package ro.frit.ticketing.booking;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import ro.frit.ticketing.config.TestcontainersConfiguration;
 import ro.frit.ticketing.event.Event;
 import ro.frit.ticketing.event.EventRepository;
 import ro.frit.ticketing.event.Venue;
+import ro.frit.ticketing.shared.web.CorrelationIdFilter;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -59,6 +62,11 @@ public class RabbitBookingEventPublisherTest {
                 .with(BOOKING_CONFIRMED));
     }
 
+    @AfterEach
+    void clearTheMdc() {
+        MDC.clear();
+    }
+
     @Test
     void confirmedBookingPublishesOneJsonMessageWithTheAgreedFields() {
         eventRepository.save(Event.builder()
@@ -85,5 +93,24 @@ public class RabbitBookingEventPublisherTest {
         assertEquals(booking.bookedAt(), LocalDateTime.parse(json.get("bookedAt").asString()));
 
         assertNull(rabbitTemplate.receive(QUEUE, 500), "more than one message published");
+    }
+
+    @Test
+    void theMessageCarriesTheRequestsCorrelationId() {
+        eventRepository.save(Event.builder()
+                .id("rock-cluj")
+                .name("Rock Night")
+                .venue(new Venue("BT Arena", "Cluj"))
+                .startsAt(STARTS_AT)
+                .capacity(10)
+                .build());
+        // As inside an HTTP request: CorrelationIdFilter has put the request's id in the MDC.
+        MDC.put(CorrelationIdFilter.MDC_KEY, "corr-42");
+
+        bookingService.book("rock-cluj", new CreateBookingRequest("ana@mail.ro", 2));
+
+        Message message = rabbitTemplate.receive(QUEUE, 5_000);
+        assertNotNull(message, "no message published");
+        assertEquals("corr-42", message.getMessageProperties().getHeader(CorrelationIdFilter.HEADER));
     }
 }

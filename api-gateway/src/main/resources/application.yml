@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          # Send X-Forwarded-* headers to the services only for clients at these addresses (a regex): this machine.
+          trusted-proxies: '127\.0\.0\.1|0:0:0:0:0:0:0:1'
+
+# The one address clients use. The services keep 8085 and 8086 behind it.
+server:
+  port: 8080
+
+gateway:
+  ticketing-uri: http://localhost:8085
+  notifications-uri: http://localhost:8086
+  rate-limit:
+    capacity: 20
+    period: 10s
+
+logging:
+  pattern:
+    # Every log line shows the request's correlation id, or nothing outside a request.
+    level: "%5p [%X{correlationId:-}]"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # health for Docker and Cloud Run; info and metrics for us. Never everything: some endpoints show settings.
+        include: health, info, metrics
+  endpoint:
+    health:
+      # /actuator/health/liveness and /readiness, the two questions an orchestrator asks.
+      probes:
+        enabled: true

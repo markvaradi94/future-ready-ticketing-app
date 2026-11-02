@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Ticketing App",
-    "description": "The course project's HTTP API, the same requests as http/*.http. Start the app first: ./gradlew :notification-service:bootRun, then ./gradlew :ticketing-service:bootRun --args='--spring.profiles.active=local'. Each request checks its status code (Test Results); creating an event or a booking keeps its id for the next request.",
+    "description": "The course project's HTTP API, the same requests as http/*.http. Start the app first: ./gradlew :notification-service:bootRun, then ./gradlew :ticketing-service:bootRun --args='--spring.profiles.active=local', then ./gradlew :api-gateway:bootRun. Each request checks its status code (Test Results); creating an event or a booking keeps its id for the next request.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -306,6 +306,53 @@
             "body": {
               "mode": "raw",
               "raw": "{\"customerEmail\": \"ana@mail.ro\", \"seats\": 2}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Book with a correlation id: find lab-test-1 in all three consoles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-Id",
+                "value": "lab-test-1"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/events/rock-cluj/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "rock-cluj",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"customerEmail\": \"ion@mail.ro\", \"seats\": 1}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1067,11 +1114,11 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8085"
+      "value": "http://localhost:8080"
     },
     {
       "key": "notificationsUrl",
-      "value": "http://localhost:8086"
+      "value": "http://localhost:8080"
     },
     {
       "key": "eventId",

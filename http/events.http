@@ -1,8 +1,7 @@
-### Start the app first with the local profile:
-### ./gradlew bootRun --args='--spring.profiles.active=local'
+### Start the three services first: notification-service, ticketing (local profile), then the gateway.
 ### Postman users: import postman/ticketing-app.postman_collection.json instead.
 
-@host = http://localhost:8085
+@host = http://localhost:8080
 
 ### All events
 GET {{host}}/events

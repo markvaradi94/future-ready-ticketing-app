@@ -16,7 +16,9 @@ import ro.frit.ticketing.event.dto.EventResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,14 +56,15 @@ class BookingServiceUnitTest {
     void confirmedBookingIsAnnouncedOnceWithWhatWasStored() {
         when(eventService.reserveSeats("e1", 2))
                 .thenReturn(new EventResponse("e1", "Rock Night", "Arena", "Cluj", STARTS_AT, 100, 98));
-        // The repository gives the booking its id, as MongoDB would.
-        when(bookingRepository.save(any())).thenAnswer(call -> call.<Booking>getArgument(0).toBuilder().id("b1").build());
+        // The mapper gives the booking its id now; the repository stores it as it is. insert has two overloads,
+        // hence any(Booking.class).
+        when(bookingRepository.insert(any(Booking.class))).thenAnswer(call -> call.getArgument(0));
         ArgumentCaptor<BookingConfirmed> published = ArgumentCaptor.forClass(BookingConfirmed.class);
 
         bookingService.book("e1", new CreateBookingRequest("ana@mail.ro", 2));
 
         verify(bookingEventPublisher).publish(published.capture());
-        assertEquals("b1", published.getValue().bookingId());
+        assertDoesNotThrow(() -> UUID.fromString(published.getValue().bookingId()));
         assertEquals("e1", published.getValue().eventId());
         assertEquals("Rock Night", published.getValue().eventName());
         assertEquals(STARTS_AT, published.getValue().eventStartsAt());
@@ -76,7 +79,7 @@ class BookingServiceUnitTest {
         assertThrows(NotEnoughSeatsException.class,
                 () -> bookingService.book("e1", new CreateBookingRequest("ana@mail.ro", 2)));
 
-        verify(bookingRepository, never()).save(any());
+        verify(bookingRepository, never()).insert(any(Booking.class));
         verifyNoInteractions(bookingEventPublisher);
     }
 

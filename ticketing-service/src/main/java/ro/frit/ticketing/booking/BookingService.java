@@ -36,7 +36,8 @@ public class BookingService {
         EventResponse event = eventService.reserveSeats(eventId, request.seats());
 
         Booking booking = bookingMapper.toEntity(eventId, request, LocalDateTime.now().truncatedTo(MILLIS));
-        Booking savedBooking = bookingRepository.save(booking);
+        // The id is set already: save would take the booking for an existing one and replace it; insert says new.
+        Booking savedBooking = bookingRepository.insert(booking);
 
         bookingEventPublisher.publish(BookingConfirmed.of(savedBooking, event));
         return bookingMapper.toResponse(savedBooking);

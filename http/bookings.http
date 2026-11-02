@@ -1,8 +1,7 @@
-### Start the app first with the local profile:
-### ./gradlew bootRun --args='--spring.profiles.active=local'
+### Start the three services first: notification-service, ticketing (local profile), then the gateway.
 ### Postman users: import postman/ticketing-app.postman_collection.json instead.
 
-@host = http://localhost:8085
+@host = http://localhost:8080
 
 ### Book 2 seats: 201 with the booking. The id is kept for the next request.
 POST {{host}}/events/rock-cluj/bookings
@@ -11,6 +10,13 @@ Content-Type: application/json
 {"customerEmail": "ana@mail.ro", "seats": 2}
 
 > {% client.global.set("bookingId", response.body.id); %}
+
+### Book with a correlation id you can search for: find lab-test-1 in all three consoles
+POST {{host}}/events/rock-cluj/bookings
+Content-Type: application/json
+X-Correlation-Id: lab-test-1
+
+{"customerEmail": "ion@mail.ro", "seats": 1}
 
 ### The booking just made
 GET {{host}}/events/rock-cluj/bookings/{{bookingId}}

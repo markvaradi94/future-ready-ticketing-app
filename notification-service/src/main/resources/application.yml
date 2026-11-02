@@ -19,3 +19,20 @@ spring:
 
 server:
   port: 8086
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # health for Docker and Cloud Run; info and metrics for us. Never everything: some endpoints show settings.
+        include: health, info, metrics
+  endpoint:
+    health:
+      # /actuator/health/liveness and /readiness, the two questions an orchestrator asks.
+      probes:
+        enabled: true
+
+logging:
+  pattern:
+    # Every log line shows the request's correlation id, or nothing outside a request.
+    level: "%5p [%X{correlationId:-}]"

@@ -17,7 +17,3 @@ spring:
     virtual-host: ${CLOUDAMQP_VHOST:${CLOUDAMQP_USERNAME}}
     ssl:
       enabled: true
-  docker:
-    compose:
-      # Atlas and CloudAMQP replace the local containers.
-      enabled: false

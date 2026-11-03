@@ -112,7 +112,7 @@ In class we reached the first lab round. The commit after it adds the other roun
 
 Queries that method names cannot express, an index, and a race between two bookings.
 
-- **Spring Boot starts compose.** `spring-boot-docker-compose` (development only) runs `compose.yml` when the application starts; the `cloud` profile turns it off.
+- **Spring Boot starts compose.** `spring-boot-docker-compose` (development only) runs `compose.yml` when the application starts; the `cloud` profile turns it off. *Removed before Session 8:* two services started together each ran `docker compose up` at the same moment and collided, and from Session 8 `compose.yml` holds the whole system. Start the databases yourself (see Running it).
 - **The search.** `GET /events` takes four optional filters, `city`, `name`, `from` and `to`, bound into one `EventSearchRequest`. `EventSearchRepositoryImpl` builds the query with `MongoTemplate` from the filters that were sent: the city matches as a whole, ignoring case, and the user's text is never a regex. `EventRepository` gets it as a fragment (`EventSearchRepository`).
 - **The aggregation.** `bookedSeatsPerEvent` is summed by MongoDB (`$group`) instead of loading every booking into the application.
 - **The index.** `@Indexed` on `Booking.eventId`; `auto-index-creation` creates it at startup.
@@ -142,10 +142,12 @@ Look for the lines that start with `QUERY`, `SEATS`, `FIND` and `RACE`.
 You need JDK 25 and Docker.
 
 ```
-docker compose up -d
+docker compose up -d mongodb rabbitmq
 ./gradlew test
 ./gradlew bootRun --args='--spring.profiles.active=local'
 ```
+
+`docker compose up -d mongodb rabbitmq` starts only the databases, for running the services from IntelliJ or Gradle. From Session 8, a plain `docker compose up` starts the whole system in containers instead.
 
 The application then listens on `http://localhost:8085`. To send requests:
 

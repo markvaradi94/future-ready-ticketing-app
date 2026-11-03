@@ -12,10 +12,6 @@ java {
     }
 }
 
-tasks.bootRun {
-    workingDir = rootProject.projectDir
-}
-
 repositories {
     mavenCentral()
 }
@@ -25,7 +21,6 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.data.mongodb)
     implementation(libs.spring.boot.starter.amqp)
-    developmentOnly(libs.spring.boot.docker.compose)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 

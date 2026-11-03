@@ -12,10 +12,6 @@ java {
     }
 }
 
-tasks.bootRun {
-    workingDir = rootProject.projectDir
-}
-
 repositories {
     mavenCentral()
 }
@@ -28,7 +24,6 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     compileOnly(libs.lombok)
-    developmentOnly(libs.spring.boot.docker.compose)
     annotationProcessor(libs.lombok)
 
     testImplementation(libs.spring.boot.starter.data.mongodb.test)

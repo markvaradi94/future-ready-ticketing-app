@@ -3,9 +3,6 @@ spring:
     name: notification
   mongodb:
     database: notifications
-  docker:
-    compose:
-      lifecycle-management: start-only
   data:
     mongodb:
       auto-index-creation: true

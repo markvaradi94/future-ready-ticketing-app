@@ -20,6 +20,3 @@ spring:
     virtual-host: ${CLOUDAMQP_VHOST:${CLOUDAMQP_USERNAME}}
     ssl:
       enabled: true
-  docker:
-    compose:
-      enabled: false

@@ -5,12 +5,77 @@ services:
       - "27017:27017"
     volumes:
       - mongodb-data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   rabbitmq:
     image: rabbitmq:4-management
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  ticketing-service:
+    build:
+      context: .
+      dockerfile: ticketing-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_MONGODB_HOST: mongodb
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_MONGODB_HOST: mongodb
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    environment:
+      GATEWAY_TICKETING_URI: http://ticketing-service:8085
+      GATEWAY_NOTIFICATIONS_URI: http://notification-service:8086
+    ports:
+      - "8080:8080"
+    depends_on:
+      ticketing-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
 volumes:
   mongodb-data:

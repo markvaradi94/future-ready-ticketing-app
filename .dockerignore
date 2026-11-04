@@ -1,0 +1,10 @@
+*
+!gradlew
+!gradle/
+!settings.gradle.kts
+!build.gradle.kts
+!ticketing-service/
+!notification-service/
+!api-gateway/
+**/build/
+**/.gradle/

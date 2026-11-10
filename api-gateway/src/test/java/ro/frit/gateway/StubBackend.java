@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 final class StubBackend {
 
     private final HttpServer server;
+    private volatile String lastAuthorization;
 
     StubBackend(String name) {
         try {
@@ -22,6 +23,7 @@ final class StubBackend {
             throw new IllegalStateException(e);
         }
         server.createContext("/", exchange -> {
+            lastAuthorization = exchange.getRequestHeaders().getFirst("Authorization");
             String answer = name + " " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " "
                     + exchange.getRequestHeaders().getFirst(CorrelationIdFilter.HEADER);
             byte[] body = answer.getBytes(StandardCharsets.UTF_8);
@@ -39,5 +41,9 @@ final class StubBackend {
 
     void stop() {
         server.stop(0);
+    }
+
+    String lastAuthorization() {
+        return lastAuthorization;
     }
 }

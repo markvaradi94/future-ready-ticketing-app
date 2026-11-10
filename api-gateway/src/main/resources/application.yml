@@ -11,6 +11,7 @@ spring:
 # The one address clients use. The services keep 8085 and 8086 behind it.
 server:
   port: 8080
+  forward-headers-strategy: native
 
 gateway:
   ticketing-uri: http://localhost:8085
@@ -18,6 +19,9 @@ gateway:
   rate-limit:
     capacity: 20
     period: 10s
+  cloud-run-auth:
+    enabled: false
+    metadata-uri: http://metadata.google.internal
 
 logging:
   pattern:

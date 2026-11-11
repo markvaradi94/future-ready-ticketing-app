@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  compile:
     runs-on: ubuntu-22.04
 
     steps:
@@ -23,12 +23,38 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - run: chmod +x gradlew
-      - run: ./gradlew build
+      - run: ./gradlew assemble testClasses
+
+  test:
+    needs: compile
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - run: chmod +x gradlew
+      - run: ./gradlew test
+
+  images:
+    needs: test
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v5
+
       - run: docker compose build
 
   deploy:
-    needs: build
-    if: github.ref == 'refs.heads/main' && vars.GCP_PROJECT_ID != ''
+    needs: test
+    if: github.ref == 'refs/heads/main' && vars.GCP_PROJECT_ID != ''
     runs-on: ubuntu-22.04
     environment:
       name: production
@@ -57,7 +83,7 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+      - run: gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
 
       - name: Build and push the docker images, tagged with the commit SHA
         run: |
@@ -70,8 +96,8 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           for service in notification-service ticketing-service api-gateway; do
-              gcloud run deploy "$service" --image "$REPO/$service:$TAG" --update-labels "commit=$TAG" --quiet
-              gcloud run services update-traffic "$service" --to-latest --quiet
+            gcloud run deploy "$service" --image "$REPO/$service:$TAG" --update-labels "commit=$TAG" --quiet
+            gcloud run services update-traffic "$service" --to-latest --quiet
           done
 
       - name: Smoke test

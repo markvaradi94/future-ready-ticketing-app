@@ -23,7 +23,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - run: chmod +x gradlew
-      - run: ./gradlew assemble testClasses
+      - run: ./gradlew clean build -x test
 
   test:
     needs: compile
@@ -40,10 +40,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
 
       - run: chmod +x gradlew
-      - run: ./gradlew test
+      - run: ./gradlew clean build test --info --stacktrace
 
   images:
-    if: github.ref != 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
 
@@ -53,7 +52,7 @@ jobs:
       - run: docker compose build
 
   deploy:
-    needs: test
+    needs: images
     if: github.ref == 'refs/heads/main' && vars.GCP_PROJECT_ID != ''
     runs-on: ubuntu-latest
     environment:

@@ -8,7 +8,7 @@ RUN --mount=type=cache,target=/root/.gradle,sharing=locked ./gradlew ":${SERVICE
 RUN java -Djarmode=tools -jar "${SERVICE}/build/libs/${SERVICE}.jar" extract --layers --launcher --destination /extracted
 
 FROM eclipse-temurin:25-jre
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/* \
+RUN apt-get -o Acquire::Retries=5 update && apt-get -o Acquire::Retries=5 install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/* \
       && useradd --system --uid 10001 spring
 WORKDIR /app
 COPY --from=build /extracted/dependencies/ ./

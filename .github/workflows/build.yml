@@ -24,6 +24,7 @@ jobs:
 
       - run: chmod +x gradlew
       - run: ./gradlew build
+      - run: docker compose build
 
   deploy:
     needs: build

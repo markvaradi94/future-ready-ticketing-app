@@ -55,9 +55,6 @@ jobs:
     needs: images
     if: github.ref == 'refs/heads/main' && vars.GCP_PROJECT_ID != ''
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ steps.smoke.outputs.url }}
     concurrency:
       group: production
       cancel-in-progress: false

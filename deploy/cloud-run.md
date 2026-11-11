@@ -164,13 +164,4 @@ gcloud run services update notification-service --min-instances 0      # done fo
 gcloud run services update notification-service --min-instances 1      # before the next demo
 ```
 
-To remove everything at the end of the course: delete the three services, the repository and the two secrets.
-
-```bash
-gcloud run services delete api-gateway --quiet
-gcloud run services delete ticketing-service --quiet
-gcloud run services delete notification-service --quiet
-gcloud artifacts repositories delete ticketing --location=$REGION --quiet
-gcloud secrets delete mongodb-password --quiet
-gcloud secrets delete cloudamqp-password --quiet
-```
+To remove everything at the end of the course (the services, the images, the secrets, the pipeline's access and the service accounts, or the whole project), follow `deploy/cleanup.md`.

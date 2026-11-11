@@ -3,6 +3,7 @@ name: Build
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,3 +25,60 @@ jobs:
       - run: chmod +x gradlew
       - run: ./gradlew build
       - run: docker compose build
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs.heads/main' && vars.GCP_PROJECT_ID != ''
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.smoke.outputs.url }}
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      CLOUDSDK_CORE_PROJECT: ${{ vars.GCP_PROJECT_ID }}
+      CLOUDSDK_RUN_REGION: ${{ vars.GCP_REGION }}
+      REPO: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ticketing
+      TAG: ${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - run: chmod +x gradlew
+
+      - run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push the docker images, tagged with the commit SHA
+        run: |
+          for pair in ticketing-service:8085 notification-service:8086 api-gateway:8080; do
+            service=${pair%%:*}
+            docker build --build-arg SERVICE="$service" --build-arg PORT="${pair#*:}" -t "$REPO/$service:$TAG" .
+            docker push "$REPO/$service:$TAG"
+          done
+
+      - name: Deploy to Cloud Run
+        run: |
+          for service in notification-service ticketing-service api-gateway; do
+              gcloud run deploy "$service" --image "$REPO/$service:$TAG" --update-labels "commit=$TAG" --quiet
+              gcloud run services update-traffic "$service" --to-latest --quiet
+          done
+
+      - name: Smoke test
+        id: smoke
+        run: |
+          url=$(gcloud run services describe api-gateway --format='value(status.url)')
+          curl -fsS --retry 5 --retry-delay 5 --retry-all-errors "$url/actuator/health"
+          curl -fsS "$url/events" > /dev/null
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed $TAG, serving at $url"

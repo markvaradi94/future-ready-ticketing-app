@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   compile:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
@@ -27,7 +27,7 @@ jobs:
 
   test:
     needs: compile
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
@@ -44,7 +44,7 @@ jobs:
 
   images:
     needs: test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
@@ -54,7 +54,7 @@ jobs:
   deploy:
     needs: images
     if: github.ref == 'refs/heads/main' && vars.GCP_PROJECT_ID != ''
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     environment:
       name: production
       url: ${{ steps.smoke.outputs.url }}

@@ -43,6 +43,7 @@ jobs:
       - run: ./gradlew test
 
   images:
+    if: github.ref != 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
 
@@ -52,7 +53,7 @@ jobs:
       - run: docker compose build
 
   deploy:
-    needs: images
+    needs: test
     if: github.ref == 'refs/heads/main' && vars.GCP_PROJECT_ID != ''
     runs-on: ubuntu-latest
     environment:
